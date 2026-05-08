@@ -1,0 +1,58 @@
+:root {
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --bg-color: #030403;
+  --bg-gradient: radial-gradient(circle at top, #0A140F 0%, #030403 100%);
+  --gold-accent: #d4af37;
+  --gold-hover: #b5952f;
+  --green-glow: #00ff88;
+  --card-bg: rgba(20, 25, 20, 0.4);
+  --card-border: rgba(212, 175, 55, 0.2);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--bg-color);
+  background-image: var(--bg-gradient);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Typography styles */
+h1, h2, h3, h4 {
+  color: #fff;
+  margin: 0;
+  font-weight: 700;
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #f3e5ab, #d4af37, #aa7815);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.green-glow-text {
+  color: var(--green-glow);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+/* Glassmorphic utilities */
+.glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+}

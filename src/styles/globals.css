@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Colors - AI CAPRA Theme */
+  --bg-primary: #030403;
+  --bg-surface: #0a140f;
+  --accent-primary: #d4af37; /* Capra Gold */
+  --accent-secondary: #00ff88; /* Circuit Green */
+  --accent-blue: #f3e5ab; /* Light gold gradient pair */
+  --accent-cyan: #00ff88; /* Glow */
+  
+  --text-primary: #f8fafc;
+  --text-muted: #9ca3af;
+  --border-color: rgba(212, 175, 55, 0.15); /* Gold tinted border */
+  --destructive: #ef4444;
+  --gold: #d4af37;
+
+  /* Typography */
+  --font-primary: 'Outfit', sans-serif;
+  --font-fallback: 'Inter', sans-serif;
+
+  /* Radii */
+  --radius-btn: 12px;
+  --radius-card: 16px;
+  --radius-page: 24px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-surface);
+  border-radius: 4px; border: 1px solid var(--border-color);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+/* Keyframes */
+@keyframes shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(0.99); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Utilities */
+.glass {
+  background-color: rgba(10, 20, 15, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #f3e5ab 0%, #aa7815 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 4s linear infinite;
+}
