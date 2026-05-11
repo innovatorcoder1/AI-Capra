@@ -74,7 +74,7 @@ function App() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 1 }}
           >
-            <img src="/logo.png" alt="AI Capra emblem" className="hero-logo" />
+            <img src="/assets/landing/hero-natural.png" alt="AI Capra Intelligence" className="hero-main-visual" style={{ maxWidth: '600px', margin: '2rem auto', filter: 'drop-shadow(0 0 50px rgba(212, 175, 55, 0.4))' }} />
           </motion.div>
           
           <h1 className="hero-title">

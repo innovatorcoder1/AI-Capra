@@ -71,41 +71,59 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-glow"></div>
-        <motion.div 
-          className="hero-content"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="hero-badge">
-             <Sparkles size={14} color="var(--gold)" />
-             <span>The Next Frontier of Neural Excellence</span>
-          </div>
-          <h1 className="hero-title">
-            Unleash the Power of <br />
-            <span className="gold-text">Autonomous Intelligence</span>
-          </h1>
-          <p className="hero-subtitle">
-            AI Capra is an elite ecosystem of generative engines, semantic analyzers, 
-            and cognitive assistants. Built for those who demand absolute precision.
-          </p>
+        <div className="hero-grid">
+          <motion.div 
+            className="hero-info"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="hero-badge">
+               <Sparkles size={14} color="var(--gold)" />
+               <span>The Next Frontier of Neural Excellence</span>
+            </div>
+            <h1 className="hero-title">
+              Unleash the Power of <br />
+              <span className="gold-text">Autonomous Intelligence</span>
+            </h1>
+            <p className="hero-subtitle">
+              AI Capra is an elite ecosystem of generative engines, semantic analyzers, 
+              and cognitive assistants. Built for those who demand absolute precision.
+            </p>
+            
+            <ul className="hero-feature-list">
+               <li><CheckCircle2 size={20} color="var(--gold)" /> Autonomous Neural Reasoning</li>
+               <li><CheckCircle2 size={20} color="var(--gold)" /> Multi-Model Synthesis Engine</li>
+               <li><CheckCircle2 size={20} color="var(--gold)" /> Enterprise Precision Analytics</li>
+            </ul>
 
-          <motion.img 
-            src="/assets/landing/hero.png" 
-            alt="AI Capra Core" 
-            className="hero-main-visual"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 1 }}
-          />
+            <div className="hero-buttons">
+              <button className="btn-primary" onClick={() => navigate('/chat')}>
+                Get Started Free <ChevronRight size={18} />
+              </button>
+              <button className="btn-secondary">Technical Specs</button>
+            </div>
+          </motion.div>
 
-          <div className="hero-buttons">
-            <button className="btn-primary" onClick={() => navigate('/chat')}>
-              Get Started Free <ChevronRight size={18} />
-            </button>
-            <button className="btn-secondary">Technical Specs</button>
-          </div>
-        </motion.div>
+          <motion.div 
+            className="hero-visual-box"
+            initial={{ scale: 0.8, opacity: 0, x: 30 }}
+            animate={{ scale: 1, opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 1 }}
+          >
+            <div className="hero-img-wrapper glass">
+              <img 
+                src="/assets/landing/hero-natural.png" 
+                alt="AI Capra Intelligence" 
+                className="hero-main-img" 
+              />
+              <div className="img-overlay-text">
+                <div className="overlay-badge">Neural Core v2.4</div>
+                <span>System Active: Stable</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       {/* Solutions Section */}
