@@ -5,7 +5,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './ChatArena.css';
 
-
 import { AI_MODELS } from '../config/models';
 
 const WEBHOOK_URL = 'https://n8n.srv1196219.hstgr.cloud/webhook/AI-Capra';
@@ -73,7 +72,7 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
                       <button
                         key={model.model}
                         className="model-dropdown-item"
-                        style={{ borderLeftColor: selectedModel.model === model.model ? model.color : 'transparent' }}
+                        style={{ borderLeftColor: side === 'left' ? model.color : 'transparent' }}
                         onClick={() => {
                           onSelectModel(model);
                           setShowSelector(false);
@@ -108,7 +107,7 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
             <div className={`message-content ${msg.role === 'assistant' ? 'markdown-content glass' : ''}`}>
               {msg.role === 'assistant' ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {msg.content}
+                  {msg.content || "..."}
                 </ReactMarkdown>
               ) : (
                 msg.content
@@ -118,7 +117,12 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
                   <Paperclip size={12} /> {msg.fileName}
                 </div>
               )}
-              {msg.type === 'audio' && (
+              {msg.type === 'image' && msg.fileName && (
+                <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
+                  <Paperclip size={12} /> {msg.fileName}
+                </div>
+              )}
+              {msg.type === 'voice' && (
                 <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
                   <Mic size={12} /> Voice Message
                 </div>
@@ -141,6 +145,9 @@ export default function ChatArena() {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
+
+  const [conversationIdLeft] = useState(() => crypto.randomUUID?.() || Math.random().toString(36).substring(2) + Date.now().toString(36));
+  const [conversationIdRight] = useState(() => crypto.randomUUID?.() || Math.random().toString(36).substring(2) + Date.now().toString(36));
 
   // Recording states
   const [isRecording, setIsRecording] = useState(false);
@@ -229,6 +236,26 @@ export default function ChatArena() {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const findTextInObject = (obj) => {
+      if (typeof obj === 'string') return obj;
+      if (!obj || typeof obj !== 'object') return null;
+      if (obj.output && typeof obj.output === 'string') return obj.output;
+      if (obj.text && typeof obj.text === 'string') return obj.text;
+      if (Array.isArray(obj)) {
+          for (const item of obj) {
+              const res = findTextInObject(item);
+              if (res) return res;
+          }
+      } else {
+          for (const key in obj) {
+              if (key === 'metadata') continue;
+              const res = findTextInObject(obj[key]);
+              if (res) return res;
+          }
+      }
+      return null;
+  };
+
   const parseStreamingResponse = async (reader, setMessages) => {
     const decoder = new TextDecoder();
     let assistantMessage = "";
@@ -236,43 +263,95 @@ export default function ChatArena() {
 
     setMessages(prev => [...prev, { role: 'assistant', content: "", type: 'text' }]);
 
+    const updateMessages = (content) => {
+        let cleanContent = content
+            .replace(/beginitem/g, '')
+            .replace(/end/g, '');
+        
+        if (cleanContent.includes('","metadata":')) {
+            cleanContent = cleanContent.split('","metadata":')[0];
+        }
+
+        setMessages(prev => {
+            const newMessages = [...prev];
+            if (newMessages.length > 0) {
+                newMessages[newMessages.length - 1].content = cleanContent;
+            }
+            return newMessages;
+        });
+    };
+
+    const handleData = (data) => {
+        if (data.type === 'item' && data.content) {
+            assistantMessage += data.content;
+        } else {
+            const extracted = findTextInObject(data);
+            if (extracted) {
+                if (assistantMessage && extracted.startsWith(assistantMessage)) {
+                    assistantMessage = extracted;
+                } else if (assistantMessage && extracted.length < assistantMessage.length && assistantMessage.includes(extracted)) {
+                   // Skip
+                } else {
+                    assistantMessage += extracted;
+                }
+            }
+        }
+        updateMessages(assistantMessage);
+    };
+
+    const handleChunk = (chunk) => {
+        const regex = /beginitem([\s\S]*?)end/g;
+        let match;
+        let found = false;
+
+        while ((match = regex.exec(chunk)) !== null) {
+            found = true;
+            const content = match[1];
+            try {
+                const data = JSON.parse(content);
+                handleData(data);
+            } catch (e) {
+                if (content && !content.startsWith('{') && !content.startsWith('[')) {
+                    assistantMessage += content;
+                    updateMessages(assistantMessage);
+                }
+            }
+        }
+
+        if (!found && chunk.trim()) {
+            try {
+                const data = JSON.parse(chunk);
+                handleData(data);
+            } catch (e) {
+                if (!chunk.includes('","metadata":') && !chunk.startsWith('{')) {
+                    assistantMessage += chunk;
+                    updateMessages(assistantMessage);
+                }
+            }
+        }
+    };
+
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const data = JSON.parse(line);
-            if (data.type === 'item' && data.content) {
-              assistantMessage += data.content;
-              setMessages(prev => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1].content = assistantMessage;
-                return newMessages;
-              });
-            }
-          } catch (e) { }
+        
+        if (buffer.includes('end')) {
+            const parts = buffer.split('end');
+            buffer = parts.pop() || "";
+            parts.forEach(p => handleChunk(p + 'end'));
+        } 
+        else if (buffer.includes('\n')) {
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || "";
+          lines.forEach(handleChunk);
         }
       }
 
       if (buffer.trim()) {
-        try {
-          const data = JSON.parse(buffer);
-          if (data.type === 'item' && data.content) assistantMessage = data.content;
-          else if (Array.isArray(data) && data[0]?.output) assistantMessage = data[0].output;
-
-          setMessages(prev => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1].content = assistantMessage;
-            return newMessages;
-          });
-        } catch (e) { }
+          handleChunk(buffer);
       }
     } catch (error) {
       console.error("Streaming error:", error);
@@ -282,10 +361,19 @@ export default function ChatArena() {
   const handleSend = async () => {
     if (!inputText.trim() && selectedFiles.length === 0 && !audioBlob) return;
 
-    const type = audioBlob ? 'audio' : (selectedFiles.length > 0 ? 'document' : 'input');
+    const getMessageType = () => {
+        if (audioBlob) return 'voice';
+        if (selectedFiles.length > 0) {
+            const file = selectedFiles[0];
+            return file.type.startsWith('image/') ? 'image' : 'document';
+        }
+        return 'text';
+    };
+
+    const type = getMessageType();
     const userMessage = {
       role: 'user',
-      content: inputText || (audioBlob ? "Voice Message" : "Uploaded Document"),
+      content: inputText || (audioBlob ? "Voice Message" : "Uploaded Attachment"),
       type: type,
       fileName: selectedFiles.length > 0 ? selectedFiles[0].name : null
     };
@@ -293,8 +381,6 @@ export default function ChatArena() {
     setMessagesLeft(prev => [...prev, userMessage]);
     setMessagesRight(prev => [...prev, userMessage]);
 
-    // Capture values before clearing
-    const currentInput = inputText;
     const currentFiles = [...selectedFiles];
     const currentAudioBlob = audioBlob;
 
@@ -303,19 +389,23 @@ export default function ChatArena() {
     setAudioBlob(null);
     setIsLoading(true);
 
-    const sendToModel = async (model, setMessages) => {
+    const sendToModel = async (model, setMessages, convId) => {
       try {
         const formData = new FormData();
         formData.append('input', userMessage.content);
         formData.append('type', userMessage.type);
         formData.append('model', model.model);
         formData.append('provider', model.provider);
+        formData.append('conversation_id', convId);
 
-        if (userMessage.type === 'document' && currentFiles.length > 0) {
-          formData.append('file', currentFiles[0]);
-        }
-        if (userMessage.type === 'audio' && currentAudioBlob) {
-          formData.append('file', currentAudioBlob, 'audio.wav');
+        if (userMessage.type === 'document' || userMessage.type === 'image') {
+          if (currentFiles.length > 0) formData.append('file', currentFiles[0]);
+        } else if (userMessage.type === 'voice') {
+          if (currentAudioBlob) {
+              // Send as raw binary blob but with a .wav extension so the backend recognizes it
+              const binaryBlob = new Blob([currentAudioBlob], { type: 'audio/wav' });
+              formData.append('data', binaryBlob, 'audio.wav');
+          }
         }
 
         const response = await fetch(WEBHOOK_URL, { method: 'POST', body: formData });
@@ -330,8 +420,8 @@ export default function ChatArena() {
     };
 
     await Promise.all([
-      sendToModel(modelLeft, setMessagesLeft),
-      sendToModel(modelRight, setMessagesRight)
+      sendToModel(modelLeft, setMessagesLeft, conversationIdLeft),
+      sendToModel(modelRight, setMessagesRight, conversationIdRight)
     ]);
 
     setIsLoading(false);
@@ -433,4 +523,3 @@ export default function ChatArena() {
     </div>
   );
 }
-

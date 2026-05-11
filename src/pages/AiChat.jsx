@@ -33,7 +33,7 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
             <div className={`message-content ${msg.role === 'assistant' ? 'markdown-content glass' : ''}`}>
               {msg.role === 'assistant' ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {msg.content}
+                  {msg.content || "..."}
                 </ReactMarkdown>
               ) : (
                 msg.content
@@ -43,7 +43,12 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
                   <Paperclip size={12} /> {msg.fileName}
                 </div>
               )}
-              {msg.type === 'audio' && (
+              {msg.type === 'image' && msg.fileName && (
+                <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
+                  <Paperclip size={12} /> {msg.fileName}
+                </div>
+              )}
+              {msg.type === 'voice' && (
                 <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
                   <Mic size={12} /> Voice Message
                 </div>
@@ -66,6 +71,7 @@ export default function AiChat() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isCalling, setIsCalling] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const [conversationId] = useState(() => crypto.randomUUID?.() || Math.random().toString(36).substring(2) + Date.now().toString(36));
 
   // Recording states
   const [isRecording, setIsRecording] = useState(false);
@@ -160,6 +166,26 @@ export default function AiChat() {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const findTextInObject = (obj) => {
+      if (typeof obj === 'string') return obj;
+      if (!obj || typeof obj !== 'object') return null;
+      if (obj.output && typeof obj.output === 'string') return obj.output;
+      if (obj.text && typeof obj.text === 'string') return obj.text;
+      if (Array.isArray(obj)) {
+          for (const item of obj) {
+              const res = findTextInObject(item);
+              if (res) return res;
+          }
+      } else {
+          for (const key in obj) {
+              if (key === 'metadata') continue;
+              const res = findTextInObject(obj[key]);
+              if (res) return res;
+          }
+      }
+      return null;
+  };
+
   const parseStreamingResponse = async (reader) => {
     const decoder = new TextDecoder();
     let assistantMessage = "";
@@ -167,57 +193,95 @@ export default function AiChat() {
 
     setMessages(prev => [...prev, { role: 'assistant', content: "", type: 'text' }]);
 
+    const updateMessages = (content) => {
+        let cleanContent = content
+            .replace(/beginitem/g, '')
+            .replace(/end/g, '');
+        
+        if (cleanContent.includes('","metadata":')) {
+            cleanContent = cleanContent.split('","metadata":')[0];
+        }
+
+        setMessages(prev => {
+            const newMessages = [...prev];
+            if (newMessages.length > 0) {
+                newMessages[newMessages.length - 1].content = cleanContent;
+            }
+            return newMessages;
+        });
+    };
+
+    const handleData = (data) => {
+        if (data.type === 'item' && data.content) {
+            assistantMessage += data.content;
+        } else {
+            const extracted = findTextInObject(data);
+            if (extracted) {
+                if (assistantMessage && extracted.startsWith(assistantMessage)) {
+                    assistantMessage = extracted;
+                } else if (assistantMessage && extracted.length < assistantMessage.length && assistantMessage.includes(extracted)) {
+                   // Skip
+                } else {
+                    assistantMessage += extracted;
+                }
+            }
+        }
+        updateMessages(assistantMessage);
+    };
+
+    const handleChunk = (chunk) => {
+        const regex = /beginitem([\s\S]*?)end/g;
+        let match;
+        let found = false;
+
+        while ((match = regex.exec(chunk)) !== null) {
+            found = true;
+            const content = match[1];
+            try {
+                const data = JSON.parse(content);
+                handleData(data);
+            } catch (e) {
+                if (content && !content.startsWith('{') && !content.startsWith('[')) {
+                    assistantMessage += content;
+                    updateMessages(assistantMessage);
+                }
+            }
+        }
+
+        if (!found && chunk.trim()) {
+            try {
+                const data = JSON.parse(chunk);
+                handleData(data);
+            } catch (e) {
+                if (!chunk.includes('","metadata":') && !chunk.startsWith('{')) {
+                    assistantMessage += chunk;
+                    updateMessages(assistantMessage);
+                }
+            }
+        }
+    };
+
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-
-        // Keep the last segment in the buffer if it doesn't end with a newline
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const data = JSON.parse(line);
-            if (data.type === 'item' && data.content) {
-              assistantMessage += data.content;
-              setMessages(prev => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1].content = assistantMessage;
-                return newMessages;
-              });
-            }
-          } catch (e) {
-            // Potentially partial or non-JSON line, continue
-            console.warn("Parse error:", e, line);
-          }
+        
+        if (buffer.includes('end')) {
+            const parts = buffer.split('end');
+            buffer = parts.pop() || "";
+            parts.forEach(p => handleChunk(p + 'end'));
+        } 
+        else if (buffer.includes('\n')) {
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || "";
+          lines.forEach(handleChunk);
         }
       }
 
-      // Process any remaining content in the buffer (or handle full JSON response)
       if (buffer.trim()) {
-        try {
-          const data = JSON.parse(buffer);
-          // Handle streaming item format
-          if (data.type === 'item' && data.content) {
-            assistantMessage = data.content;
-          }
-          // Handle full JSON array format as fallback
-          else if (Array.isArray(data) && data[0] && data[0].output) {
-            assistantMessage = data[0].output;
-          }
-
-          setMessages(prev => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1].content = assistantMessage;
-            return newMessages;
-          });
-        } catch (e) {
-          // Final buffer might not be a complete JSON object
-        }
+          handleChunk(buffer);
       }
     } catch (error) {
       console.error("Streaming error:", error);
@@ -227,19 +291,31 @@ export default function AiChat() {
   const handleSend = async () => {
     if (!inputText.trim() && selectedFiles.length === 0 && !audioBlob) return;
 
-    const type = audioBlob ? 'audio' : (selectedFiles.length > 0 ? 'document' : 'input');
+    const getMessageType = () => {
+        if (audioBlob) return 'voice';
+        if (selectedFiles.length > 0) {
+            const file = selectedFiles[0];
+            return file.type.startsWith('image/') ? 'image' : 'document';
+        }
+        return 'text';
+    };
+
+    const type = getMessageType();
     const userMessage = {
       role: 'user',
-      content: inputText || (audioBlob ? "Voice Message" : "Uploaded Document"),
+      content: inputText || (audioBlob ? "Voice Message" : "Uploaded Attachment"),
       type: type,
       fileName: selectedFiles.length > 0 ? selectedFiles[0].name : null
     };
 
+    const currentFiles = [...selectedFiles];
+    const currentAudioBlob = audioBlob;
+
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setSelectedFiles([]);
+    setAudioBlob(null);
     setIsLoading(true);
-    const currentAudioBlob = audioBlob; // Capture current blob for the request
 
     try {
       const formData = new FormData();
@@ -247,13 +323,16 @@ export default function AiChat() {
       formData.append('type', userMessage.type);
       formData.append('model', currentModel.model);
       formData.append('provider', currentModel.provider);
+      formData.append('conversation_id', conversationId);
 
-      if (userMessage.type === 'document' && selectedFiles.length > 0) {
-        formData.append('file', selectedFiles[0]);
-      }
-
-      if (userMessage.type === 'audio' && currentAudioBlob) {
-        formData.append('file', currentAudioBlob, 'audio.wav');
+      if (userMessage.type === 'document' || userMessage.type === 'image') {
+        if (currentFiles.length > 0) formData.append('file', currentFiles[0]);
+      } else if (userMessage.type === 'voice') {
+        if (currentAudioBlob) {
+            // Send as raw binary blob but with a .wav extension so the backend recognizes it
+            const binaryBlob = new Blob([currentAudioBlob], { type: 'audio/wav' });
+            formData.append('data', binaryBlob, 'audio.wav');
+        }
       }
 
       const response = await fetch(WEBHOOK_URL, {
@@ -262,11 +341,6 @@ export default function AiChat() {
       });
 
       if (!response.ok) throw new Error('Network response was not ok');
-
-      // Clear states only after successful start of request/streaming
-      setInputText('');
-      setSelectedFiles([]);
-      setAudioBlob(null);
 
       const reader = response.body.getReader();
       await parseStreamingResponse(reader);
