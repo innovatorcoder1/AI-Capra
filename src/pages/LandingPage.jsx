@@ -63,7 +63,7 @@ export default function LandingPage() {
           <a href="#how-it-works">Process</a>
           <a href="#roadmap">Future</a>
         </div>
-        <button className="btn-primary" onClick={() => navigate('/dashboard')}>
+        <button className="btn-primary" onClick={() => navigate('/chat')}>
           Launch Intelligence
         </button>
       </nav>
@@ -100,7 +100,7 @@ export default function LandingPage() {
           />
 
           <div className="hero-buttons">
-            <button className="btn-primary" onClick={() => navigate('/dashboard')}>
+            <button className="btn-primary" onClick={() => navigate('/chat')}>
               Get Started Free <ChevronRight size={18} />
             </button>
             <button className="btn-secondary">Technical Specs</button>
@@ -220,7 +220,7 @@ export default function LandingPage() {
       <section className="cta-section">
         <h2>Ready to Lead the Revolution?</h2>
         <p>Join the world's most advanced AI platform and transcend traditional limits.</p>
-        <button className="btn-primary large" onClick={() => navigate('/dashboard')}>
+        <button className="btn-primary large" onClick={() => navigate('/chat')}>
           Get Early Access Now
         </button>
       </section>

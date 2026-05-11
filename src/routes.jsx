@@ -1,7 +1,6 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import RootLayout from './components/layout/RootLayout';
 import LandingPage from './pages/LandingPage';
-import Dashboard from './pages/Dashboard';
 import AiChat from './pages/AiChat';
 import ChatArena from './pages/ChatArena';
 import ImageGeneration from './pages/ImageGeneration';
@@ -19,7 +18,7 @@ export const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
-      { path: "dashboard", element: <Dashboard /> },
+      { path: "dashboard", element: <Navigate to="/chat" replace /> },
       { path: "chat", element: <AiChat /> },
       { path: "chat-arena", element: <ChatArena /> },
       { path: "image-generation", element: <ImageGeneration /> },
@@ -28,7 +27,7 @@ export const router = createBrowserRouter([
       { path: "generate-documents", element: <GenerateDocuments /> },
       { path: "career-development", element: <CareerDevelopment /> },
       { path: "psychological-counseling", element: <PsychologicalCounseling /> },
-      { path: "library", element: <Dashboard /> }
+      { path: "library", element: <AiChat /> }
     ]
   }
 ]);

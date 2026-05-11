@@ -55,7 +55,7 @@ function App() {
           <a href="#solutions">Solutions</a>
           <a href="#about">About</a>
         </div>
-        <button className="btn-primary" onClick={() => window.location.href = '/dashboard'}>
+        <button className="btn-primary" onClick={() => window.location.href = '/chat'}>
           Launch App
         </button>
       </nav>
@@ -88,7 +88,7 @@ function App() {
           </p>
 
           <div className="hero-buttons">
-            <button className="btn-primary" onClick={() => window.location.href = '/dashboard'}>
+            <button className="btn-primary" onClick={() => window.location.href = '/chat'}>
               Get Started Free <ChevronRight size={18} />
             </button>
             <button className="btn-secondary">View Documentation</button>

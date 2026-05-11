@@ -56,6 +56,8 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
             </div>
           </div>
         ))}
+        {/* Spacer to ensure the last message is not hidden behind the floating bar */}
+        <div className="chat-bottom-spacer" style={{ height: '160px', minHeight: '160px' }} />
         <div ref={messagesEndRef} />
       </div>
     </div>
@@ -169,8 +171,10 @@ export default function AiChat() {
   const findTextInObject = (obj) => {
       if (typeof obj === 'string') return obj;
       if (!obj || typeof obj !== 'object') return null;
+      
       if (obj.output && typeof obj.output === 'string') return obj.output;
       if (obj.text && typeof obj.text === 'string') return obj.text;
+      
       if (Array.isArray(obj)) {
           for (const item of obj) {
               const res = findTextInObject(item);
@@ -329,7 +333,6 @@ export default function AiChat() {
         if (currentFiles.length > 0) formData.append('file', currentFiles[0]);
       } else if (userMessage.type === 'voice') {
         if (currentAudioBlob) {
-            // Send as raw binary blob but with a .wav extension so the backend recognizes it
             const binaryBlob = new Blob([currentAudioBlob], { type: 'audio/wav' });
             formData.append('data', binaryBlob, 'audio.wav');
         }

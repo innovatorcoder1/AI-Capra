@@ -146,6 +146,30 @@
   gap: 1rem;
 }
 
+/* Fix for scrolling to top when using flex-end behavior */
+.chat-messages::before {
+  content: "";
+  margin-top: auto;
+}
+
+/* Custom Scrollbar */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.2);
+  border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.4);
+}
+
 .message {
   display: flex;
   max-width: 85%;
@@ -157,6 +181,12 @@
 
 .message.assistant {
   align-self: flex-start;
+}
+
+.chat-bottom-spacer {
+  flex-shrink: 0;
+  width: 100%;
+  pointer-events: none;
 }
 
 .message-content {
@@ -299,12 +329,17 @@
 }
 
 .chat-input-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(to top, rgba(10, 10, 15, 0.8), transparent);
+  pointer-events: none; /* Let clicks pass through outside the bar */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  z-index: 100;
 }
 
 .file-preview-area {
@@ -341,14 +376,15 @@
 .chat-input-bar {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  padding: 0.75rem 1.25rem;
   border-radius: 20px;
   width: 100%;
-  max-width: 800px;
-  background: rgba(25, 25, 30, 0.6);
+  max-width: 850px;
+  background: rgba(25, 25, 30, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(15px);
+  pointer-events: auto; /* Re-enable clicks for the bar itself */
 }
 
 .chat-input-top {

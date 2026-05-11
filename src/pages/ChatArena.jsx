@@ -130,6 +130,8 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
             </div>
           </div>
         ))}
+        {/* Spacer to ensure the last message is not hidden behind the floating bar */}
+        <div className="chat-bottom-spacer" style={{ height: '160px', minHeight: '160px' }} />
         <div ref={messagesEndRef} />
       </div>
     </div>
@@ -402,8 +404,7 @@ export default function ChatArena() {
           if (currentFiles.length > 0) formData.append('file', currentFiles[0]);
         } else if (userMessage.type === 'voice') {
           if (currentAudioBlob) {
-              // Send as raw binary blob but with a .wav extension so the backend recognizes it
-              const binaryBlob = new Blob([currentAudioBlob], { type: 'audio/wav' });
+              const binaryBlob = new Blob([currentAudioBlob], { type: 'application/octet-stream' });
               formData.append('data', binaryBlob, 'audio.wav');
           }
         }
