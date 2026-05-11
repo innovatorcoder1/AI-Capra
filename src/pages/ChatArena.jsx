@@ -1,23 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Mic, ChevronDown, Trophy, X, Pause, Play, Phone, PhoneOff, Square } from 'lucide-react';
+import { Send, Paperclip, Mic, ChevronDown, ChevronLeft, ChevronRight, Trophy, X, Pause, Play, Phone, PhoneOff, Square } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './ChatArena.css';
 
 
-const AI_MODELS = [
-  { provider: 'OpenAI', model: 'GPT-4o', color: '#00a67e', logo: '🤖' },
-  { provider: 'Anthropic', model: 'Claude 3.5', color: '#d4a574', logo: '🧠' },
-  { provider: 'Google', model: 'Gemini 1.5', color: '#4285f4', logo: '✨' },
-  { provider: 'Mistral', model: 'Mistral Large', color: '#f2a73b', logo: '⚡' }
-];
+import { AI_MODELS } from '../config/models';
 
 const WEBHOOK_URL = 'https://n8n.srv1196219.hstgr.cloud/webhook/AI-Capra';
 
 
 function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
   const [showSelector, setShowSelector] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -33,7 +29,10 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
           <button
             className="model-selector-btn glass"
             style={{ borderColor: showSelector ? selectedModel.color : 'transparent' }}
-            onClick={() => setShowSelector(!showSelector)}
+            onClick={() => {
+              setShowSelector(!showSelector);
+              setSelectedProvider(null);
+            }}
           >
             <span className="model-logo">{selectedModel.logo}</span>
             <div className="model-info">
@@ -50,24 +49,45 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 className="model-dropdown glass"
+                style={{ maxHeight: '350px', overflowY: 'auto' }}
               >
-                {AI_MODELS.map(model => (
-                  <button
-                    key={model.model}
-                    className="model-dropdown-item"
-                    style={{ borderLeftColor: selectedModel.model === model.model ? model.color : 'transparent' }}
-                    onClick={() => {
-                      onSelectModel(model);
-                      setShowSelector(false);
-                    }}
-                  >
-                    <span className="model-logo">{model.logo}</span>
-                    <div className="model-info">
-                      <span className="model-provider">{model.provider}</span>
-                      <span className="model-name">{model.model}</span>
-                    </div>
-                  </button>
-                ))}
+                {!selectedProvider ? (
+                  <>
+                    {Array.from(new Set(AI_MODELS.map(m => m.provider))).map(provider => (
+                      <button
+                        key={provider}
+                        className="provider-item"
+                        onClick={() => setSelectedProvider(provider)}
+                      >
+                        <span className="provider-name">{provider}</span>
+                        <ChevronRight size={14} />
+                      </button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <button className="back-btn" onClick={() => setSelectedProvider(null)}>
+                      <ChevronLeft size={14} /> Back to Providers
+                    </button>
+                    {AI_MODELS.filter(m => m.provider === selectedProvider).map(model => (
+                      <button
+                        key={model.model}
+                        className="model-dropdown-item"
+                        style={{ borderLeftColor: selectedModel.model === model.model ? model.color : 'transparent' }}
+                        onClick={() => {
+                          onSelectModel(model);
+                          setShowSelector(false);
+                          setSelectedProvider(null);
+                        }}
+                      >
+                        <span className="model-logo">{model.logo}</span>
+                        <div className="model-info">
+                          <span className="model-name">{model.model}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -289,6 +309,7 @@ export default function ChatArena() {
         formData.append('input', userMessage.content);
         formData.append('type', userMessage.type);
         formData.append('model', model.model);
+        formData.append('provider', model.provider);
 
         if (userMessage.type === 'document' && currentFiles.length > 0) {
           formData.append('file', currentFiles[0]);

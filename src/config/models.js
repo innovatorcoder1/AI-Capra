@@ -1,0 +1,15 @@
+export const AI_MODELS = [
+  { provider: 'ChatGPT', model: 'gpt-5.2', color: '#00a67e', logo: '🤖' },
+  { provider: 'ChatGPT', model: 'gpt-5', color: '#00a67e', logo: '🤖' },
+  { provider: 'ChatGPT', model: 'gpt-4o mini', color: '#00a67e', logo: '🤖' },
+  { provider: 'Gemini', model: 'gemini 3 pro', color: '#4285f4', logo: '✨' },
+  { provider: 'Gemini', model: 'gemini 2.5 flash', color: '#4285f4', logo: '✨' },
+  { provider: 'Gemini', model: 'gemini 2.0', color: '#4285f4', logo: '✨' },
+  { provider: 'Claude', model: 'claude opus 4.5', color: '#d4a574', logo: '🧠' },
+  { provider: 'Claude', model: 'claude sonnet 4.5', color: '#d4a574', logo: '🧠' },
+  { provider: 'Claude', model: 'claude Haiku 4.5', color: '#d4a574', logo: '🧠' },
+  { provider: 'Grok', model: 'Grok 4 fast', color: '#ffffff', logo: '🚀' },
+  { provider: 'Grok', model: 'Grok 3 mini', color: '#ffffff', logo: '🚀' },
+  { provider: 'Perplexity', model: 'Sonar pro', color: '#00bcd4', logo: '🔍' },
+  { provider: 'Perplexity', model: 'Sonar Deep Research', color: '#00bcd4', logo: '🔍' },
+];
