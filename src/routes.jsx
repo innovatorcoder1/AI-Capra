@@ -9,6 +9,7 @@ import AnalyzeDocuments from './pages/AnalyzeDocuments';
 import GenerateDocuments from './pages/GenerateDocuments';
 import CareerDevelopment from './pages/CareerDevelopment';
 import PsychologicalCounseling from './pages/PsychologicalCounseling';
+import Community from './pages/Community';
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { path: "generate-documents", element: <GenerateDocuments /> },
       { path: "career-development", element: <CareerDevelopment /> },
       { path: "psychological-counseling", element: <PsychologicalCounseling /> },
+      { path: "community", element: <Community /> },
       { path: "library", element: <AiChat /> }
     ]
   }

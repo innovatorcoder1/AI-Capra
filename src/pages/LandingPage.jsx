@@ -11,39 +11,45 @@ import './LandingPage.css';
 const functionalities = [
   {
     icon: MessageSquare,
-    title: 'Multi-Model AI Chat',
-    desc: 'Access GPT-4o, Claude 3.5, and Gemini Pro in a single, unified interface.',
-    status: 'Live'
+    title: 'Elite Neural Chat',
+    desc: 'Engage with GPT-5.2, Claude 4.5, and Gemini 3 Pro in a single high-performance arena. Absolute cognitive dominance.',
+    status: 'Live',
+    color: 'var(--accent-primary)'
   },
   {
     icon: Image,
-    title: 'Image Forge',
-    desc: 'Generate hyper-realistic 4K images with custom styles and aspect ratios.',
-    status: 'Live'
+    title: 'Neural Image Forge',
+    desc: 'Synthesize hyper-realistic 8K visual assets with our proprietary diffusion frameworks. Total creative control.',
+    status: 'Live',
+    color: 'var(--gold)'
   },
   {
     icon: FileText,
-    title: 'Smart Document Analysis',
-    desc: 'Upload complex PDFs and get instant semantic insights and summaries.',
-    status: 'Live'
-  },
-  {
-    icon: Video,
-    title: 'Video Synthesis',
-    desc: 'Transform text prompts into high-fidelity cinematic video clips.',
-    status: 'Coming Soon'
+    title: 'Semantic Intelligence',
+    desc: 'Extract deep ontological insights from complex datasets with RAG-powered semantic analysis and real-time processing.',
+    status: 'Live',
+    color: '#00c972'
   },
   {
     icon: Briefcase,
-    title: 'AI Career Coach',
-    desc: 'Get personalized career roadmaps and interview preparation.',
-    status: 'Beta'
+    title: 'Neural Document Architect',
+    desc: 'Transform abstract concepts into structured, professional documents with AI-driven precision and formatting.',
+    status: 'Live',
+    color: '#15a7e0'
+  },
+  {
+    icon: Video,
+    title: 'Cinematic Synthesis',
+    desc: 'Transform complex prompts into ultra-high-fidelity cinematic video sequences. The future of media generation.',
+    status: 'Coming Soon',
+    color: '#a855f7'
   },
   {
     icon: Brain,
-    title: 'Psychological Insights',
-    desc: 'Deep psychological analysis for wellness and mental growth.',
-    status: 'Beta'
+    title: 'Cognitive Development',
+    desc: 'Deep psychological modeling and personalized career roadmaps for peak performance and professional evolution.',
+    status: 'Beta',
+    color: '#f59e0b'
   }
 ];
 
@@ -59,8 +65,10 @@ export default function LandingPage() {
           <span className="brand-name">AI CAPRA</span>
         </div>
         <div className="nav-links">
+          <a href="#features">Features</a>
           <a href="#solutions">Solutions</a>
           <a href="#how-it-works">Process</a>
+          <button onClick={() => navigate('/community')} style={{ background: 'none', border: 'none', color: '#94a3b8', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'color 0.3s' }}>Community Hub</button>
           <a href="#roadmap">Future</a>
         </div>
         <button className="btn-primary" onClick={() => navigate('/chat')}>
@@ -126,11 +134,46 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Features Grid Section */}
+      <section id="features" className="features-grid-section">
+        <div className="section-header">
+          <span className="section-tag">Neural Ecosystem</span>
+          <h2 className="section-title">The Apex of AI Capabilities</h2>
+          <p className="section-subtitle">Six specialized engines designed to transcend traditional limits and redefine what is possible.</p>
+        </div>
+
+        <div className="features-grid-container">
+          {functionalities.map((feature, idx) => (
+            <motion.div 
+              key={idx}
+              className="feature-card glass"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1 }}
+              whileHover={{ y: -10, scale: 1.02 }}
+            >
+              <div className="card-glow" style={{ background: `radial-gradient(circle at center, ${feature.color}15 0%, transparent 70%)` }}></div>
+              <div className="feature-icon-box" style={{ color: feature.color }}>
+                <feature.icon size={32} />
+              </div>
+              <div className="feature-status-tag">{feature.status}</div>
+              <h3>{feature.title}</h3>
+              <p>{feature.desc}</p>
+              <button className="feature-link" onClick={() => navigate('/chat')}>
+                Initialize Engine <ArrowRight size={16} />
+              </button>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
       {/* Solutions Section */}
       <section id="solutions" className="features-section">
         <div className="section-header">
-          <span className="section-tag">Core Engines</span>
-          <h2 className="section-title">Superior Cognitive Capabilities</h2>
+          <span className="section-tag">Elite Architect</span>
+          <h2 className="section-title">Superior Cognitive Architectures</h2>
+          <p className="section-subtitle">Deep-dive into our specialized frameworks for high-stakes execution.</p>
         </div>
 
         <div className="showcase-grid">
@@ -141,12 +184,12 @@ export default function LandingPage() {
              viewport={{ once: true }}
            >
               <div className="showcase-info">
-                <h3>Image Forge Pro</h3>
-                <p>Generate high-fidelity visual assets with our proprietary diffusion framework. 4K resolution, perfect lighting, and infinite styles.</p>
+                <h3>Neural Image Forge Pro</h3>
+                <p>Synthesize high-fidelity visual assets with our proprietary diffusion framework. 8K resolution, dynamic lighting, and infinite stylistic depth.</p>
                 <ul className="feature-list-simple">
-                   <li><CheckCircle2 size={16} /> Ultra-HD Output</li>
-                   <li><CheckCircle2 size={16} /> Style Consistency</li>
-                   <li><CheckCircle2 size={16} /> Fast Inference</li>
+                   <li><CheckCircle2 size={16} /> Ultra-HD Cinematic Output</li>
+                   <li><CheckCircle2 size={16} /> Stylistic Consistency Engine</li>
+                   <li><CheckCircle2 size={16} /> Real-time Neural Inference</li>
                 </ul>
               </div>
               <div className="showcase-visual-box">
@@ -162,11 +205,11 @@ export default function LandingPage() {
            >
               <div className="showcase-info">
                 <h3>Semantic Document Intelligence</h3>
-                <p>Turn mountains of data into actionable insights. Our RAG-powered analyzer understands context, tone, and hidden patterns.</p>
+                <p>Transform chaotic datasets into actionable executive summaries. Our RAG-powered analyzer deciphers context, intent, and complex patterns with total precision.</p>
                 <ul className="feature-list-simple">
-                   <li><CheckCircle2 size={16} /> Instant Summarization</li>
-                   <li><CheckCircle2 size={16} /> Cross-Doc Referencing</li>
-                   <li><CheckCircle2 size={16} /> Export to Pro Layouts</li>
+                   <li><CheckCircle2 size={16} /> Instant Ontological Summarization</li>
+                   <li><CheckCircle2 size={16} /> Multi-Document Cognitive Mapping</li>
+                   <li><CheckCircle2 size={16} /> Professional PDF Synthesis</li>
                 </ul>
               </div>
               <div className="showcase-visual-box">
@@ -179,24 +222,24 @@ export default function LandingPage() {
       {/* How it Works */}
       <section id="how-it-works" className="how-it-works">
         <div className="section-header">
-           <span className="section-tag">Workflow</span>
-           <h2 className="section-title">Three Steps to Mastery</h2>
+           <span className="section-tag">Strategic Workflow</span>
+           <h2 className="section-title">Three Phases of Intelligence</h2>
         </div>
         <div className="steps-container">
-           <div className="step-card">
+           <div className="step-card glass">
               <div className="step-num">01</div>
-              <h4>Initialize Prompt</h4>
-              <p>Define your vision or upload your complex datasets.</p>
+              <h4>Initialize Matrix</h4>
+              <p>Define your core vision or upload complex datasets for neural ingestion.</p>
            </div>
-           <div className="step-card">
+           <div className="step-card glass">
               <div className="step-num">02</div>
-              <h4>Neural Processing</h4>
-              <p>Our distributed engines process and refine your request.</p>
+              <h4>Neural Refinement</h4>
+              <p>Our distributed engines synthesize and optimize every parameter of your request.</p>
            </div>
-           <div className="step-card">
+           <div className="step-card glass">
               <div className="step-num">03</div>
-              <h4>Execute Output</h4>
-              <p>Receive professional-grade results in seconds.</p>
+              <h4>Execute Deployment</h4>
+              <p>Receive professional-grade, actionable results in hyper-accelerated timelines.</p>
            </div>
         </div>
       </section>
@@ -266,7 +309,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2024 AI CAPRA Technologies. Intelligence Redefined.</p>
+          <p>&copy; 2026 AI CAPRA Technologies. Intelligence Redefined.</p>
         </div>
       </footer>
     </div>

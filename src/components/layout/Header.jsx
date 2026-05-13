@@ -38,8 +38,6 @@ export default function Header({ onMenuClick }) {
 
         <nav className="header-nav">
           <NavLink to="/" className={({ isActive }) => isActive ? "active" : ""}>Home</NavLink>
-          <a href="#features" style={{ color: 'var(--text-muted)' }}>Features</a>
-          <a href="#community" style={{ color: 'var(--text-muted)' }}>Community</a>
           <a href="#blog" style={{ color: 'var(--text-muted)' }}>Blog</a>
           <a href="#pricing" style={{ color: 'var(--text-muted)' }}>Pricing</a>
         </nav>
