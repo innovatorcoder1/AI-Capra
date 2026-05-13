@@ -28,10 +28,13 @@ export default function AnalyzeDocuments() {
 
     const formData = new FormData();
     formData.append('data', file);
-    formData.append('fileName', file.name);
+    
+    // Extract document type for backend flow separation
+    const fileType = file.name.split('.').pop().toLowerCase();
+    const webhookUrl = `https://n8n.srv1196219.hstgr.cloud/webhook/Analyze-documents?fileType=${fileType}`;
 
     try {
-      const response = await fetch('https://n8n.srv1196219.hstgr.cloud/webhook/Analyze-documents', {
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         body: formData,
       });
