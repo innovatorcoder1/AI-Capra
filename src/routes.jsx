@@ -10,11 +10,20 @@ import GenerateDocuments from './pages/GenerateDocuments';
 import CareerDevelopment from './pages/CareerDevelopment';
 import PsychologicalCounseling from './pages/PsychologicalCounseling';
 import Community from './pages/Community';
+import Pricing from './pages/Pricing';
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <LandingPage />
+  },
+  {
+    path: "/community",
+    element: <Community />
+  },
+  {
+    path: "/pricing",
+    element: <Pricing />
   },
   {
     element: <RootLayout />,
@@ -28,7 +37,6 @@ export const router = createBrowserRouter([
       { path: "generate-documents", element: <GenerateDocuments /> },
       { path: "career-development", element: <CareerDevelopment /> },
       { path: "psychological-counseling", element: <PsychologicalCounseling /> },
-      { path: "community", element: <Community /> },
       { path: "library", element: <AiChat /> }
     ]
   }

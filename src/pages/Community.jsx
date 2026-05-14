@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, MessageSquare, Image, Cpu, Shield, Globe, Search, ArrowRight, CheckCircle2, Zap } from 'lucide-react';
+import { Users, MessageSquare, Image, Cpu, Shield, Globe, Search, ArrowRight, CheckCircle2, Zap, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import ParticleField from '../components/ui/ParticleField';
 import './Community.css';
 
 const communities = [
@@ -65,6 +67,7 @@ export default function Community() {
   const [activeTab, setActiveTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [joinedCommunities, setJoinedCommunities] = useState([]);
+  const navigate = useNavigate();
 
   const categories = ['All', 'Engineering', 'Creative', 'Development', 'Research', 'Policy'];
 
@@ -84,7 +87,23 @@ export default function Community() {
   };
 
   return (
-    <div className="community-container">
+    <div className="community-page-wrapper">
+      <ParticleField />
+      
+      <nav className="simple-nav glass">
+        <button className="back-btn" onClick={() => navigate('/')}>
+          <ArrowLeft size={20} /> Back to Home
+        </button>
+        <div className="nav-brand">
+          <img src="/logo.png" alt="Logo" />
+          <span>AI CAPRA</span>
+        </div>
+        <button className="btn-primary" onClick={() => navigate('/chat')}>
+          Launch Intelligence
+        </button>
+      </nav>
+
+      <div className="community-container">
       {/* Hero Section */}
       <section className="community-hero">
         <div className="hero-glow"></div>
@@ -199,6 +218,7 @@ export default function Community() {
           </div>
         </div>
       </motion.section>
+    </div>
     </div>
   );
 }

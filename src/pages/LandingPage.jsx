@@ -68,7 +68,8 @@ export default function LandingPage() {
           <a href="#features">Features</a>
           <a href="#solutions">Solutions</a>
           <a href="#how-it-works">Process</a>
-          <button onClick={() => navigate('/community')} style={{ background: 'none', border: 'none', color: '#94a3b8', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'color 0.3s' }}>Community Hub</button>
+          <button onClick={() => navigate('/community')} style={{ background: 'none', border: 'none', color: '#94a3b8', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'color 0.3s' }}>Community</button>
+          <button onClick={() => navigate('/pricing')} style={{ background: 'none', border: 'none', color: '#94a3b8', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'color 0.3s' }}>Pricing</button>
           <a href="#roadmap">Future</a>
         </div>
         <button className="btn-primary" onClick={() => navigate('/chat')}>
@@ -302,6 +303,7 @@ export default function LandingPage() {
             </div>
             <div className="footer-col">
               <h4>Legal</h4>
+              <a onClick={() => navigate('/pricing')} style={{ cursor: 'pointer' }}>Pricing</a>
               <a href="#">Privacy</a>
               <a href="#">Terms</a>
               <a href="#">Security</a>

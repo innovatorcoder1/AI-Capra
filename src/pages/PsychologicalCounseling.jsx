@@ -18,12 +18,13 @@ function LiveSession({ session, onClose }) {
   const [isCalling, setIsCalling] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
+  const [conversationId] = useState(() => `conv_${Math.random().toString(36).substr(2, 9)}`);
 
   const messagesEndRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
-  const WEBHOOK_URL = "https://n8n.srv1196219.hstgr.cloud/webhook/Psychological";
+  const WEBHOOK_URL = "https://n8n.srv1196219.hstgr.cloud/webhook/AI-Psychological";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -135,9 +136,10 @@ function LiveSession({ session, onClose }) {
 
     try {
       const formData = new FormData();
-      formData.append('input', userMessage.content);
+      formData.append('message', userMessage.content);
       formData.append('type', userMessage.type);
-      formData.append('session_type', session.title);
+      formData.append('coach_type', session.title);
+      formData.append('conversation_id', conversationId);
 
       if (userMessage.type === 'audio' && currentAudioBlob) {
         formData.append('file', currentAudioBlob, 'audio.wav');
