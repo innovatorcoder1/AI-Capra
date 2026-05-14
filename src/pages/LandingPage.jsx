@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../config/AuthContext';
+import AuthModal from '../components/auth/AuthModal';
 import './LandingPage.css';
 
 const functionalities = [
@@ -55,6 +57,16 @@ const functionalities = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+
+  const handleLaunch = () => {
+    if (user) {
+      navigate('/chat');
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
 
   return (
     <div className="landing-container">
@@ -68,11 +80,11 @@ export default function LandingPage() {
           <a href="#features">Features</a>
           <a href="#solutions">Solutions</a>
           <a href="#how-it-works">Process</a>
-          <button onClick={() => navigate('/community')} style={{ background: 'none', border: 'none', color: '#94a3b8', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'color 0.3s' }}>Community</button>
+
           <button onClick={() => navigate('/pricing')} style={{ background: 'none', border: 'none', color: '#94a3b8', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'color 0.3s' }}>Pricing</button>
           <a href="#roadmap">Future</a>
         </div>
-        <button className="btn-primary" onClick={() => navigate('/chat')}>
+        <button className="btn-primary" onClick={handleLaunch}>
           Launch Intelligence
         </button>
       </nav>
@@ -107,7 +119,7 @@ export default function LandingPage() {
             </ul>
 
             <div className="hero-buttons">
-              <button className="btn-primary" onClick={() => navigate('/chat')}>
+              <button className="btn-primary" onClick={handleLaunch}>
                 Get Started Free <ChevronRight size={18} />
               </button>
               <button className="btn-secondary">Technical Specs</button>
@@ -161,7 +173,7 @@ export default function LandingPage() {
               <div className="feature-status-tag">{feature.status}</div>
               <h3>{feature.title}</h3>
               <p>{feature.desc}</p>
-              <button className="feature-link" onClick={() => navigate('/chat')}>
+              <button className="feature-link" onClick={handleLaunch}>
                 Initialize Engine <ArrowRight size={16} />
               </button>
             </motion.div>
@@ -282,7 +294,7 @@ export default function LandingPage() {
       <section className="cta-section">
         <h2>Ready to Lead the Revolution?</h2>
         <p>Join the world's most advanced AI platform and transcend traditional limits.</p>
-        <button className="btn-primary large" onClick={() => navigate('/chat')}>
+        <button className="btn-primary large" onClick={handleLaunch}>
           Get Early Access Now
         </button>
       </section>
@@ -314,6 +326,11 @@ export default function LandingPage() {
           <p>&copy; 2026 AI CAPRA Technologies. Intelligence Redefined.</p>
         </div>
       </footer>
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
     </div>
   );
 }

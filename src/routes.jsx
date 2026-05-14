@@ -9,24 +9,21 @@ import AnalyzeDocuments from './pages/AnalyzeDocuments';
 import GenerateDocuments from './pages/GenerateDocuments';
 import CareerDevelopment from './pages/CareerDevelopment';
 import PsychologicalCounseling from './pages/PsychologicalCounseling';
-import Community from './pages/Community';
 import Pricing from './pages/Pricing';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <LandingPage />
   },
-  {
-    path: "/community",
-    element: <Community />
-  },
+
   {
     path: "/pricing",
     element: <Pricing />
   },
   {
-    element: <RootLayout />,
+    element: <ProtectedRoute><RootLayout /></ProtectedRoute>,
     children: [
       { path: "dashboard", element: <Navigate to="/chat" replace /> },
       { path: "chat", element: <AiChat /> },

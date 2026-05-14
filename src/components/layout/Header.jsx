@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NavLink } from 'react-router';
+import { NavLink, useNavigate } from 'react-router';
+import { useAuth } from '../../config/AuthContext';
 import { Coins, Settings, User, Bell, Menu, Shield, Moon, LogOut, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Header.css';
@@ -7,6 +8,13 @@ import './Header.css';
 export default function Header({ onMenuClick }) {
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef(null);
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -22,7 +30,7 @@ export default function Header({ onMenuClick }) {
     { icon: User, label: 'My Profile', desc: 'Manage your personal info' },
     { icon: Shield, label: 'Security', desc: 'Password and protection' },
     { icon: Moon, label: 'Appearance', desc: 'Dark mode and themes' },
-    { icon: LogOut, label: 'Sign Out', desc: 'Log out of your account', danger: true },
+    { icon: LogOut, label: 'Sign Out', desc: 'Log out of your account', danger: true, onClick: handleSignOut },
   ];
 
   return (
@@ -76,8 +84,19 @@ export default function Header({ onMenuClick }) {
                 className="settings-dropdown glass"
               >
                 <div className="dropdown-header">
-                  <span className="dropdown-title">Settings</span>
-                  <span className="dropdown-subtitle">Quick preferences</span>
+                  <div className="user-profile-summary">
+                    <div className="summary-avatar">
+                      {user?.user_metadata?.avatar_url ? (
+                        <img src={user.user_metadata.avatar_url} alt="" />
+                      ) : (
+                        <User size={16} />
+                      )}
+                    </div>
+                    <div className="summary-info">
+                      <span className="user-name">{user?.user_metadata?.full_name || user?.email?.split('@')[0]}</span>
+                      <span className="user-email">{user?.email}</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="dropdown-divider"></div>
                 <div className="dropdown-items">
@@ -86,6 +105,7 @@ export default function Header({ onMenuClick }) {
                       key={idx}
                       whileHover={{ x: 4, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
                       className={`dropdown-item ${item.danger ? 'danger' : ''}`}
+                      onClick={item.onClick}
                     >
                       <div className="item-icon-bg">
                         <item.icon size={16} />
@@ -106,9 +126,15 @@ export default function Header({ onMenuClick }) {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="avatar-btn"
+          className={`avatar-btn ${showSettings ? 'active' : ''}`}
+          onClick={() => setShowSettings(!showSettings)}
+          title={user?.email || 'Guest User'}
         >
-          <User size={20} color="#000" />
+          {user?.user_metadata?.avatar_url ? (
+            <img src={user.user_metadata.avatar_url} alt="Profile" className="avatar-img" />
+          ) : (
+            <User size={20} color="#000" />
+          )}
         </motion.button>
       </div>
     </header>

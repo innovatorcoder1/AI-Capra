@@ -12,7 +12,7 @@ import './Career.css';
 function LiveSession({ session, onClose }) {
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: `Welcome to your ${session.title}. I am your professional AI Counselor. How are you feeling today?` }
+    { role: 'assistant', content: `Welcome to your ${session.title}. I am your professional ${session.role}. How are you feeling today?` }
   ]);
   const [isRecording, setIsRecording] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
@@ -185,8 +185,8 @@ function LiveSession({ session, onClose }) {
               <Brain size={20} color="#fff" />
             </div>
             <div className="agent-text">
-              <h4>AI Counselor</h4>
-              <span>Professional Session Active</span>
+              <h4>{session.botName}</h4>
+              <span>{session.role} Active</span>
             </div>
           </div>
           <button className="close-session-btn" onClick={onClose}>
@@ -212,7 +212,7 @@ function LiveSession({ session, onClose }) {
                       <Brain size={64} color="var(--accent-primary)" />
                     </div>
                   </div>
-                  <h3 className="text-gradient">Career Clarity Agent</h3>
+                  <h3 className="text-gradient">{session.botName}</h3>
                   <p className="session-context">{session.desc}</p>
                 </div>
 
@@ -260,7 +260,7 @@ function LiveSession({ session, onClose }) {
                   </div>
                 </div>
                 <div className="call-info">
-                  <h2 className="text-gradient">AI counselor</h2>
+                  <h2 className="text-gradient">{session.botName}</h2>
                   <div className="call-status-pill">
                     <span className="dot"></span>
                     Live Audio Session
@@ -345,37 +345,49 @@ export default function PsychologicalCounseling() {
       title: "Career Clarity Session",
       desc: "Discover your true career calling through guided self-reflection",
       icon: <Brain size={24} color="#fff" />,
-      gradient: "linear-gradient(135deg, #d946ef, #8b5cf6)"
+      gradient: "linear-gradient(135deg, #d946ef, #8b5cf6)",
+      role: "Career Counselor",
+      botName: "Career Clarity Agent"
     },
     {
       title: "Stress Management",
       desc: "Learn techniques to manage workplace stress and anxiety",
       icon: <Heart size={24} color="#fff" />,
-      gradient: "linear-gradient(135deg, #f97316, #ef4444)"
+      gradient: "linear-gradient(135deg, #f97316, #ef4444)",
+      role: "Wellness Coach",
+      botName: "Stress Relief Expert"
     },
     {
       title: "Goal Setting Workshop",
       desc: "Set achievable career goals with psychological frameworks",
       icon: <Target size={24} color="#fff" />,
-      gradient: "linear-gradient(135deg, #0ea5e9, #3b82f6)"
+      gradient: "linear-gradient(135deg, #0ea5e9, #3b82f6)",
+      role: "Performance Coach",
+      botName: "Goal Achievement Strategist"
     },
     {
       title: "Confidence Building",
       desc: "Build professional confidence through proven methods",
       icon: <Award size={24} color="#fff" />,
-      gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)"
+      gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+      role: "Confidence Coach",
+      botName: "Self-Esteem Architect"
     },
     {
       title: "Growth Mindset",
       desc: "Develop a mindset that embraces challenges and learning",
       icon: <TrendingUp size={24} color="#fff" />,
-      gradient: "linear-gradient(135deg, #14b8a6, #22c55e)"
+      gradient: "linear-gradient(135deg, #14b8a6, #22c55e)",
+      role: "Growth Mentor",
+      botName: "Mindset Evolution Guide"
     },
     {
       title: "Work-Life Balance",
       desc: "Find harmony between career ambitions and personal well-being",
       icon: <Smile size={24} color="#fff" />,
-      gradient: "linear-gradient(135deg, #84cc16, #eab308)"
+      gradient: "linear-gradient(135deg, #84cc16, #eab308)",
+      role: "Balance Counselor",
+      botName: "Harmony Specialist"
     }
   ];
 

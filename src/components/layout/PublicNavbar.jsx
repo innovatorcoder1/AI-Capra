@@ -1,10 +1,22 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router';
+import { useAuth } from '../../config/AuthContext';
+import AuthModal from '../auth/AuthModal';
 import './PublicNavbar.css';
 
 export default function PublicNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+
+  const handleLaunch = () => {
+    if (user) {
+      navigate('/chat');
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
 
   const handleNavClick = (id) => {
     if (location.pathname === '/') {
@@ -28,14 +40,19 @@ export default function PublicNavbar() {
         <button onClick={() => handleNavClick('features')}>Features</button>
         <button onClick={() => handleNavClick('solutions')}>Solutions</button>
         <button onClick={() => handleNavClick('how-it-works')}>Process</button>
-        <button onClick={() => navigate('/community')} className={location.pathname === '/community' ? 'active' : ''}>Community</button>
+
         <button onClick={() => navigate('/pricing')} className={location.pathname === '/pricing' ? 'active' : ''}>Pricing</button>
         <button onClick={() => handleNavClick('roadmap')}>Future</button>
       </div>
 
-      <button className="btn-primary nav-cta" onClick={() => navigate('/chat')}>
+      <button className="btn-primary nav-cta" onClick={handleLaunch}>
         Launch Intelligence
       </button>
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
     </nav>
   );
 }

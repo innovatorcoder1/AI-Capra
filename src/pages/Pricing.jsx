@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Zap, Crown, Building2, HelpCircle, ChevronDown, ArrowRight, ShieldCheck, Cpu, Globe, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../config/AuthContext';
+import AuthModal from '../components/auth/AuthModal';
 import ParticleField from '../components/ui/ParticleField';
 import './Pricing.css';
 
@@ -70,6 +72,16 @@ export default function Pricing() {
   const [isYearly, setIsYearly] = useState(true);
   const [expandedFaq, setExpandedFaq] = useState(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const handleLaunch = () => {
+    if (user) {
+      navigate('/chat');
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
 
   const faqs = [
     { q: 'Can I switch plans anytime?', a: 'Yes, you can upgrade or downgrade your plan at any moment. Changes take effect immediately.' },
@@ -90,7 +102,7 @@ export default function Pricing() {
           <img src="/logo.png" alt="Logo" />
           <span>AI CAPRA</span>
         </div>
-        <button className="btn-primary" onClick={() => navigate('/chat')}>
+        <button className="btn-primary" onClick={handleLaunch}>
           Launch Intelligence
         </button>
       </nav>
@@ -161,7 +173,10 @@ export default function Pricing() {
               ))}
             </div>
 
-            <button className={`plan-btn ${plan.highlight ? 'btn-gold' : 'btn-glass'}`}>
+            <button 
+              className={`plan-btn ${plan.highlight ? 'btn-gold' : 'btn-glass'}`}
+              onClick={handleLaunch}
+            >
               {plan.name === 'Custom' ? 'Contact Sales' : 'Select Plan'}
               <ArrowRight size={18} />
             </button>
@@ -210,6 +225,11 @@ export default function Pricing() {
         <span>Enterprise-grade security. AES-256 encryption. SOC2 Type II Compliant.</span>
       </div>
       </div>
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
     </div>
   );
 }
