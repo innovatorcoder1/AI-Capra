@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FileEdit, Wand2, CheckCircle2, AlertCircle, Copy, Download, Maximize2, X } from 'lucide-react';
+import { FileEdit, Wand2, CheckCircle2, AlertCircle, Copy, Download, Maximize2, X, ImagePlus } from 'lucide-react';
+import { generatePPT } from '../utils/pptGenerator';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -13,6 +14,16 @@ export default function GenerateDocuments() {
   const [generatedDoc, setGeneratedDoc] = useState('');
   const [status, setStatus] = useState('idle'); // idle, success, error
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [numSlides, setNumSlides] = useState(5);
+  const [presentationData, setPresentationData] = useState(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
 
   const parseResponse = (data) => {
     try {
@@ -40,26 +51,58 @@ export default function GenerateDocuments() {
     setIsLoading(true);
     setStatus('idle');
     setGeneratedDoc('');
+    setPresentationData(null);
 
     try {
+      const formData = new FormData();
+      formData.append('document description', description);
+      formData.append('document tone', tone);
+      formData.append('Document formation', format);
+      if (format === 'Presentation') {
+        formData.append('number of slides', numSlides);
+      }
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+
       const response = await fetch('https://n8n.srv1196219.hstgr.cloud/webhook/document-generation', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          'document description': description,
-          'document tone': tone,
-          'Document formation': format,
-        }),
+        body: formData,
       });
 
       if (!response.ok) throw new Error('Failed to generate document');
 
       const data = await response.json();
-      const content = parseResponse(data);
       
-      setGeneratedDoc(content);
+      if (format === 'Presentation') {
+        let pptData = data;
+        
+        // Handle cases where the backend returns an array or stringified JSON
+        if (Array.isArray(data) && data.length > 0) {
+          if (typeof data[0] === 'string') {
+             try { pptData = JSON.parse(data[0]); } catch(e) {}
+          } else if (data[0].output && typeof data[0].output[0] === 'string') {
+             try { pptData = JSON.parse(data[0].output[0]); } catch(e) {}
+          } else {
+             pptData = data[0];
+          }
+        } else if (typeof data === 'string') {
+          try { pptData = JSON.parse(data); } catch(e) {}
+        }
+        
+        if (Array.isArray(pptData)) {
+           pptData = pptData[0]; // If it's still an array, grab the first item
+        }
+
+        setPresentationData(pptData);
+        
+        // Show a message that the presentation is ready
+        setGeneratedDoc("### 🎉 Your Presentation is Ready!\n\nYour presentation has been generated successfully.\n\nClick on the green **Download** button in the top right corner of this canvas to download your `.pptx` file.");
+      } else {
+        const content = parseResponse(data);
+        setGeneratedDoc(content);
+      }
+      
       setStatus('success');
     } catch (error) {
       console.error('Error:', error);
@@ -98,6 +141,35 @@ export default function GenerateDocuments() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               ></textarea>
+              {format === 'Presentation' && (
+                <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    id="presentation-image-upload" 
+                    style={{ display: 'none' }} 
+                    onChange={handleImageUpload} 
+                  />
+                  <label 
+                    htmlFor="presentation-image-upload" 
+                    style={{ 
+                      cursor: 'pointer', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem', 
+                      color: 'var(--gold-accent)',
+                      fontSize: '0.9rem',
+                      padding: '0.5rem',
+                      borderRadius: '8px',
+                      background: 'rgba(255, 215, 0, 0.05)',
+                      border: '1px dashed rgba(255, 215, 0, 0.3)'
+                    }}
+                  >
+                    <ImagePlus size={18} />
+                    <span>{selectedImage ? selectedImage.name : 'Upload Presentation Image'}</span>
+                  </label>
+                </div>
+              )}
             </div>
 
             <div className="tone-selector">
@@ -132,10 +204,36 @@ export default function GenerateDocuments() {
                     <option>Project Proposal</option>
                     <option>Meeting Minutes</option>
                     <option>Press Release</option>
+                    <option>Presentation</option>
                   </select>
                 </div>
               </div>
             </div>
+
+            {format === 'Presentation' && (
+              <div className="input-group" style={{ marginTop: '0.5rem' }}>
+                <label className="input-label">Number of Slides</label>
+                <input 
+                  type="number" 
+                  className="glass"
+                  min="1"
+                  max="50"
+                  value={numSlides}
+                  onChange={(e) => setNumSlides(parseInt(e.target.value) || '')}
+                  style={{ 
+                    padding: '0.75rem 1rem', 
+                    width: '100%', 
+                    borderRadius: '12px', 
+                    background: 'rgba(15, 23, 42, 0.4)', 
+                    border: '1px solid rgba(255, 255, 255, 0.1)', 
+                    color: 'white',
+                    fontFamily: 'inherit',
+                    fontSize: '0.95rem',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            )}
 
             <motion.button 
               whileHover={{ scale: 1.02 }}
@@ -198,6 +296,17 @@ export default function GenerateDocuments() {
                 >
                   <Copy size={18} />
                 </motion.button>
+                {presentationData && (
+                  <motion.button 
+                    whileHover={{ scale: 1.1 }} 
+                    className="glass" 
+                    style={{ padding: '0.5rem', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.3)' }}
+                    onClick={() => generatePPT(presentationData)}
+                    title="Download PPTX"
+                  >
+                    <Download size={18} />
+                  </motion.button>
+                )}
               </div>
             )}
           </div>
