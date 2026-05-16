@@ -11,6 +11,7 @@ import './Career.css';
 
 function LiveSession({ session, onClose }) {
   const [inputText, setInputText] = useState('');
+  const [showGuidelines, setShowGuidelines] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: `Welcome to your ${session.title}. I am your professional ${session.role}. How are you feeling today?` }
   ]);
@@ -281,6 +282,52 @@ function LiveSession({ session, onClose }) {
           </AnimatePresence>
         </div>
 
+        {/* Guidelines Modal */}
+        <AnimatePresence>
+          {showGuidelines && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{ 
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
+                zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', borderRadius: 'inherit' 
+              }}
+            >
+              <div className="glass" style={{ padding: '2rem', borderRadius: '16px', maxWidth: '450px', width: '90%', position: 'relative', overflowY: 'auto', maxHeight: '85vh' }}>
+                <button onClick={() => setShowGuidelines(false)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><X size={20} /></button>
+                <h3 style={{ marginBottom: '1.5rem', color: 'var(--accent-primary)', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Info size={20} /> Session Guidelines
+                </h3>
+                
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ color: '#fff', fontSize: '1rem', marginBottom: '0.5rem' }}>🎯 Session Purpose</h4>
+                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                    {session.desc}. This AI assistant is specifically tuned to guide you through this area of your professional and personal development.
+                  </p>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ color: '#fff', fontSize: '1rem', marginBottom: '0.5rem' }}>💡 Best Practices</h4>
+                  <ul style={{ paddingLeft: '1.2rem', color: '#e2e8f0', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem' }}>
+                    {session.guidelines?.map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div style={{ padding: '1rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '8px', borderLeft: '4px solid var(--accent-secondary)' }}>
+                  <h4 style={{ color: '#fff', fontSize: '0.9rem', marginBottom: '0.25rem' }}>🔒 Privacy & Safety</h4>
+                  <p style={{ color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.4, margin: 0 }}>
+                    This is an AI-guided session for self-reflection and growth. Your conversations are private. Please note that this AI is not a substitute for professional medical advice. If you are experiencing a mental health emergency, please contact local emergency services immediately.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Footer/Input */}
         <div className="session-footer">
           <div className="session-input-wrapper glass">
@@ -324,7 +371,7 @@ function LiveSession({ session, onClose }) {
             )}
           </div>
           <div className="session-controls">
-            <button className="control-btn"><Info size={16} /> Guidelines</button>
+            <button className="control-btn" onClick={() => setShowGuidelines(true)}><Info size={16} /> Guidelines</button>
             <button className="end-session-btn" onClick={onClose}>
               <PhoneOff size={18} /> End Session
             </button>
@@ -347,7 +394,12 @@ export default function PsychologicalCounseling() {
       icon: <Brain size={24} color="#fff" />,
       gradient: "linear-gradient(135deg, #d946ef, #8b5cf6)",
       role: "Career Counselor",
-      botName: "Career Clarity Agent"
+      botName: "Career Clarity Agent",
+      guidelines: [
+        "Be open and honest about your career aspirations and fears.",
+        "Reflect on past experiences to identify patterns and preferences.",
+        "Consider both short-term needs and long-term goals."
+      ]
     },
     {
       title: "Stress Management",
@@ -355,7 +407,12 @@ export default function PsychologicalCounseling() {
       icon: <Heart size={24} color="#fff" />,
       gradient: "linear-gradient(135deg, #f97316, #ef4444)",
       role: "Wellness Coach",
-      botName: "Stress Relief Expert"
+      botName: "Stress Relief Expert",
+      guidelines: [
+        "Identify specific triggers that cause you stress.",
+        "Practice deep breathing or grounding exercises when feeling overwhelmed.",
+        "Remember that taking breaks is essential for sustained productivity."
+      ]
     },
     {
       title: "Goal Setting Workshop",
@@ -363,7 +420,12 @@ export default function PsychologicalCounseling() {
       icon: <Target size={24} color="#fff" />,
       gradient: "linear-gradient(135deg, #0ea5e9, #3b82f6)",
       role: "Performance Coach",
-      botName: "Goal Achievement Strategist"
+      botName: "Goal Achievement Strategist",
+      guidelines: [
+        "Use the SMART criteria (Specific, Measurable, Achievable, Relevant, Time-bound).",
+        "Break down large goals into smaller, manageable steps.",
+        "Celebrate small victories along the way."
+      ]
     },
     {
       title: "Confidence Building",
@@ -371,7 +433,12 @@ export default function PsychologicalCounseling() {
       icon: <Award size={24} color="#fff" />,
       gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
       role: "Confidence Coach",
-      botName: "Self-Esteem Architect"
+      botName: "Self-Esteem Architect",
+      guidelines: [
+        "Focus on your strengths and past successes.",
+        "Challenge negative self-talk and replace it with positive affirmations.",
+        "Step out of your comfort zone gradually."
+      ]
     },
     {
       title: "Growth Mindset",
@@ -379,7 +446,12 @@ export default function PsychologicalCounseling() {
       icon: <TrendingUp size={24} color="#fff" />,
       gradient: "linear-gradient(135deg, #14b8a6, #22c55e)",
       role: "Growth Mentor",
-      botName: "Mindset Evolution Guide"
+      botName: "Mindset Evolution Guide",
+      guidelines: [
+        "View challenges as opportunities to learn rather than obstacles.",
+        "Embrace feedback as a tool for improvement.",
+        "Focus on the process of learning, not just the outcome."
+      ]
     },
     {
       title: "Work-Life Balance",
@@ -387,7 +459,12 @@ export default function PsychologicalCounseling() {
       icon: <Smile size={24} color="#fff" />,
       gradient: "linear-gradient(135deg, #84cc16, #eab308)",
       role: "Balance Counselor",
-      botName: "Harmony Specialist"
+      botName: "Harmony Specialist",
+      guidelines: [
+        "Set clear boundaries between work time and personal time.",
+        "Prioritize self-care and activities that recharge you.",
+        "Communicate your limits effectively to colleagues and managers."
+      ]
     }
   ];
 

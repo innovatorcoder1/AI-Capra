@@ -7,7 +7,9 @@ import './Header.css';
 
 export default function Header({ onMenuClick }) {
   const [showSettings, setShowSettings] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const settingsRef = useRef(null);
+  const notificationsRef = useRef(null);
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
 
@@ -20,6 +22,9 @@ export default function Header({ onMenuClick }) {
     function handleClickOutside(event) {
       if (settingsRef.current && !settingsRef.current.contains(event.target)) {
         setShowSettings(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -55,14 +60,37 @@ export default function Header({ onMenuClick }) {
           <span>1,250</span>
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="icon-btn hide-mobile"
-        >
-          <Bell size={20} />
-          <span className="notification-dot"></span>
-        </motion.button>
+        <div className="settings-container" ref={notificationsRef}>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`icon-btn hide-mobile ${showNotifications ? 'active' : ''}`}
+            onClick={() => setShowNotifications(!showNotifications)}
+          >
+            <Bell size={20} />
+            <span className="notification-dot"></span>
+          </motion.button>
+
+          <AnimatePresence>
+            {showNotifications && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="settings-dropdown glass"
+              >
+                <div className="dropdown-header">
+                  <span className="user-name">Notifications</span>
+                </div>
+                <div className="dropdown-divider"></div>
+                <div className="dropdown-items" style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                  No new notifications
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <div className="settings-container" ref={settingsRef}>
           <motion.button
