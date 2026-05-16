@@ -28,14 +28,14 @@ export default function AnalyzeDocuments() {
   const parseResponse = (data) => {
     try {
       if (!data) return '';
-      
+
       // If it's already a string, return it
       if (typeof data === 'string') return data;
 
       // Handle common n8n/AI nested structures
       const findText = (obj) => {
         if (!obj || typeof obj !== 'object') return null;
-        
+
         // Priority fields
         if (typeof obj.output === 'string') return obj.output;
         if (typeof obj.text === 'string') return obj.text;
@@ -83,7 +83,7 @@ export default function AnalyzeDocuments() {
 
     const formData = new FormData();
     formData.append('data', file);
-    
+
     // Extract document type for backend flow separation
     const fileType = file.name.split('.').pop().toLowerCase();
     const webhookUrl = `https://n8n.srv1196219.hstgr.cloud/webhook/Analyze-documents?fileType=${fileType}`;
@@ -116,17 +116,17 @@ export default function AnalyzeDocuments() {
 
   const handleDownload = () => {
     if (!report) return;
-    
+
     // Choose the ref based on whether we are in expanded mode or not
     const element = isExpanded ? expandedReportRef.current : reportRef.current;
     if (!element) return;
 
     const opt = {
-      margin:       [15, 15],
-      filename:     `analysis-${file?.name?.split('.')[0] || 'summary'}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      margin: [15, 15],
+      filename: `analysis-${file?.name?.split('.')[0] || 'summary'}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     html2pdf().set(opt).from(element).save();
@@ -135,7 +135,7 @@ export default function AnalyzeDocuments() {
   return (
     <div className="docs-container">
       <div className="analysis-layout">
-        
+
         {/* Upload Zone */}
         <div className="upload-zone-wrapper">
           <div className="prompt-controls">
@@ -144,11 +144,11 @@ export default function AnalyzeDocuments() {
             <p className="section-subtitle">Extract deep insights and summaries from your complex files in seconds.</p>
 
             <div className={`upload-zone glass ${file ? 'has-file' : ''}`} onClick={() => fileInputRef.current.click()}>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                style={{ display: 'none' }} 
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
                 accept=".pdf,.docx,.txt"
               />
               <div className="upload-zone-inner aurora-border">
@@ -162,18 +162,18 @@ export default function AnalyzeDocuments() {
                 ) : (
                   <>
                     <h3>Drag & Drop your document here</h3>
-                    <p>Supports PDF, DOCX, TXT. Max 50MB.</p>
+                    <p>Supports PDF, DOCX, TXT. Max 20MB.</p>
                   </>
                 )}
-                
+
                 <button className="btn-browse" onClick={(e) => { e.stopPropagation(); fileInputRef.current.click(); }}>
                   {file ? 'Change File' : 'Browse Files'}
                 </button>
               </div>
             </div>
 
-            <button 
-              className="generate-btn" 
+            <button
+              className="generate-btn"
               onClick={handleUpload}
               disabled={!file || isLoading}
             >
@@ -191,7 +191,7 @@ export default function AnalyzeDocuments() {
             </button>
 
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="error-box glass"
@@ -202,72 +202,72 @@ export default function AnalyzeDocuments() {
             )}
           </div>
         </div>
-        
+
         {/* Results Area */}
         <div className="results-zone glass">
-           <div className="results-header">
-             <div className="header-info">
-               <FileText size={20} color="var(--accent-primary)" />
-             </div>
-             {report && (
-               <div className="header-actions">
-                 <button className="action-btn" onClick={() => setIsExpanded(true)} title="Expand to Full Screen">
-                   <Maximize2 size={18} />
-                 </button>
-                 <button className="action-btn" onClick={handleCopy} title="Copy Summary">
-                   <Copy size={18} />
-                 </button>
-                 <button className="action-btn" onClick={handleDownload} title="Download Results">
-                   <Download size={18} />
-                 </button>
-               </div>
-             )}
-           </div>
-           
-           <div className="paper-container">
-             <AnimatePresence mode="wait">
-               {isLoading ? (
-                 <motion.div 
-                   key="loading"
-                   initial={{ opacity: 0 }}
-                   animate={{ opacity: 1 }}
-                   exit={{ opacity: 0 }}
-                   className="loader-container"
-                 >
-                   <div className="spinner"></div>
-                   <p className="animate-pulse-subtle">Deciphering context and semantics...</p>
-                 </motion.div>
-               ) : report ? (
-                  <motion.div 
-                    key="report"
-                    ref={reportRef}
-                    initial={{ opacity: 0, y: 20, rotate: -1 }}
-                    animate={{ opacity: 1, y: 0, rotate: 0 }}
-                    className="paper-report"
-                  >
-                   <div className="text-body">
-                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                       {report}
-                     </ReactMarkdown>
-                   </div>
+          <div className="results-header">
+            <div className="header-info">
+              <FileText size={20} color="var(--accent-primary)" />
+            </div>
+            {report && (
+              <div className="header-actions">
+                <button className="action-btn" onClick={() => setIsExpanded(true)} title="Expand to Full Screen">
+                  <Maximize2 size={18} />
+                </button>
+                <button className="action-btn" onClick={handleCopy} title="Copy Summary">
+                  <Copy size={18} />
+                </button>
+                <button className="action-btn" onClick={handleDownload} title="Download Results">
+                  <Download size={18} />
+                </button>
+              </div>
+            )}
+          </div>
 
-                 </motion.div>
-               ) : (
-                 <motion.div 
-                   key="placeholder"
-                   initial={{ opacity: 0 }}
-                   animate={{ opacity: 1 }}
-                   className="placeholder-content"
-                 >
-                   <div className="placeholder-icon-box glass">
-                     <FileText size={48} />
-                   </div>
-                   <h3>Ready for Intelligence</h3>
-                   <p>Upload a document to begin the deep analysis process.</p>
-                 </motion.div>
-               )}
-             </AnimatePresence>
-           </div>
+          <div className="paper-container">
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="loader-container"
+                >
+                  <div className="spinner"></div>
+                  <p className="animate-pulse-subtle">Deciphering context and semantics...</p>
+                </motion.div>
+              ) : report ? (
+                <motion.div
+                  key="report"
+                  ref={reportRef}
+                  initial={{ opacity: 0, y: 20, rotate: -1 }}
+                  animate={{ opacity: 1, y: 0, rotate: 0 }}
+                  className="paper-report"
+                >
+                  <div className="text-body">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {report}
+                    </ReactMarkdown>
+                  </div>
+
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="placeholder"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="placeholder-content"
+                >
+                  <div className="placeholder-icon-box glass">
+                    <FileText size={48} />
+                  </div>
+                  <h3>Ready for Intelligence</h3>
+                  <p>Upload a document to begin the deep analysis process.</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
       </div>
@@ -275,13 +275,13 @@ export default function AnalyzeDocuments() {
       {/* Expanded Modal */}
       <AnimatePresence>
         {isExpanded && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="expanded-overlay"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -303,17 +303,17 @@ export default function AnalyzeDocuments() {
                   </button>
                 </div>
               </div>
-              
+
               <div className="expanded-content">
                 <div className="paper-report expanded-paper" ref={expandedReportRef}>
-                   <div className="document-content">
-                    
+                  <div className="document-content">
+
                     <div className="text-body large">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {report}
                       </ReactMarkdown>
                     </div>
-                    
+
                   </div>
                 </div>
               </div>
