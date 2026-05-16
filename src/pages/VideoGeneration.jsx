@@ -5,8 +5,10 @@ import './MediaGeneration.css';
 
 export default function VideoGeneration() {
   const [prompt, setPrompt] = useState('');
+  const [model, setModel] = useState('sora');
   const [cameraMotion, setCameraMotion] = useState('Pan Left to Right');
   const [duration, setDuration] = useState('4 Seconds');
+  const [aspectRatio, setAspectRatio] = useState('16:9');
   const [isLoading, setIsLoading] = useState(false);
   const [generatedVideos, setGeneratedVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null); // For modal
@@ -80,6 +82,8 @@ export default function VideoGeneration() {
           prompt: prompt,
           cameraMotion: cameraMotion,
           duration: duration,
+          aspect_ratio: aspectRatio,
+          model: model,
         }),
       });
 
@@ -115,8 +119,10 @@ export default function VideoGeneration() {
           id: Date.now(),
           url: videoUrl,
           prompt: prompt,
+          model: model,
           cameraMotion: cameraMotion,
           duration: duration,
+          aspectRatio: aspectRatio,
           timestamp: new Date().toISOString()
         };
         setGeneratedVideos([newVideo, ...generatedVideos]);
@@ -161,6 +167,23 @@ export default function VideoGeneration() {
 
         <div className="control-scroll-area">
           <div className="control-section">
+            <label>AI Model</label>
+            <select 
+              className="control-select glass"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+            >
+              <optgroup label="OpenAI">
+                <option value="sora">OpenAI Sora</option>
+              </optgroup>
+              <optgroup label="Google">
+                <option value="veo">Google Veo</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro Video</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div className="control-section">
             <label>Video Prompt</label>
             <textarea 
               className="prompt-textarea glass" 
@@ -181,6 +204,20 @@ export default function VideoGeneration() {
               <option>Zoom In Slowly</option>
               <option>Drone Shot</option>
               <option>Static (No Motion)</option>
+            </select>
+          </div>
+
+          <div className="control-section">
+            <label>Aspect Ratio</label>
+            <select 
+              className="control-select glass"
+              value={aspectRatio}
+              onChange={(e) => setAspectRatio(e.target.value)}
+            >
+              <option value="16:9">16:9 (Landscape)</option>
+              <option value="9:16">9:16 (Portrait)</option>
+              <option value="1:1">1:1 (Square)</option>
+              <option value="4:3">4:3 (Classic)</option>
             </select>
           </div>
           
@@ -258,7 +295,7 @@ export default function VideoGeneration() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="preview-card loading-card shimmer"
-                  style={{ aspectRatio: '16/9' }}
+                  style={{ aspectRatio: aspectRatio.replace(':', '/') }}
                 >
                   <div className="spinner" style={{ width: '40px', height: '40px' }}></div>
                   <p style={{ color: '#3b82f6', fontWeight: 600 }}>Rendering Frames...</p>
@@ -272,7 +309,7 @@ export default function VideoGeneration() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="preview-card"
-                  style={{ aspectRatio: '16/9' }}
+                  style={{ aspectRatio: vid.aspectRatio?.replace(':', '/') || '16/9' }}
                 >
                   <video src={vid.url} className="preview-image" autoPlay loop muted playsInline />
                   
@@ -280,7 +317,7 @@ export default function VideoGeneration() {
                     <div className="overlay-content">
                       <div className="image-meta">
                         <span className="meta-prompt">{vid.prompt}</span>
-                        <span className="meta-details">{vid.cameraMotion} • {vid.duration}</span>
+                        <span className="meta-details">{vid.model === 'sora' ? 'OpenAI Sora' : vid.model === 'veo' ? 'Google Veo' : vid.model === 'gemini-1.5-pro' ? 'Gemini 1.5 Pro Video' : vid.model || 'OpenAI Sora'} • {vid.cameraMotion} • {vid.duration} • {vid.aspectRatio || '16:9'}</span>
                       </div>
                       <div className="action-group">
                         <button 
@@ -339,8 +376,10 @@ export default function VideoGeneration() {
               <div className="modal-footer" style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '16px' }}>
                 <p style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '0.5rem' }}>{selectedVideo.prompt}</p>
                 <div style={{ display: 'flex', gap: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+                  <span>Model: {selectedVideo.model === 'sora' ? 'OpenAI Sora' : selectedVideo.model === 'veo' ? 'Google Veo' : selectedVideo.model === 'gemini-1.5-pro' ? 'Gemini 1.5 Pro Video' : selectedVideo.model || 'OpenAI Sora'}</span>
                   <span>Motion: {selectedVideo.cameraMotion}</span>
                   <span>Duration: {selectedVideo.duration}</span>
+                  <span>Ratio: {selectedVideo.aspectRatio || '16:9'}</span>
                   <span>Created: {new Date(selectedVideo.timestamp).toLocaleString()}</span>
                 </div>
               </div>

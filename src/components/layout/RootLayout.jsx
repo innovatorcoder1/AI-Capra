@@ -3,10 +3,12 @@ import { Outlet } from 'react-router';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import ParticleField from '../ui/ParticleField';
+import HistoryModal from '../ui/HistoryModal';
 
 export default function RootLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
 
@@ -20,8 +22,14 @@ export default function RootLayout() {
           onClose={() => setSidebarOpen(false)}
           isCollapsed={isSidebarCollapsed}
           onToggle={toggleSidebar}
+          onOpenHistory={() => setIsHistoryOpen(true)}
         />
       </div>
+
+      <HistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
 
       {sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>

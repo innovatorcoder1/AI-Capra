@@ -5,7 +5,6 @@ import {
   Briefcase, Brain, BookOpen, Plus, History, X, Menu
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import HistoryModal from '../ui/HistoryModal';
 import './Sidebar.css';
 
 const navCategories = [
@@ -45,9 +44,7 @@ const navCategories = [
   }
 ];
 
-export default function Sidebar({ onClose, isCollapsed, onToggle }) {
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-
+export default function Sidebar({ onClose, isCollapsed, onToggle, onOpenHistory }) {
   return (
     <>
       <aside className={`sidebar glass ${isCollapsed ? 'collapsed' : ''}`}>
@@ -114,16 +111,11 @@ export default function Sidebar({ onClose, isCollapsed, onToggle }) {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="btn-history"
-            onClick={() => setIsHistoryOpen(true)}
+            onClick={onOpenHistory}
           >
             <History size={18} /> {!isCollapsed && 'History'}
           </motion.button>
         </div>
-
-        <HistoryModal
-          isOpen={isHistoryOpen}
-          onClose={() => setIsHistoryOpen(false)}
-        />
       </aside>
     </>
   );

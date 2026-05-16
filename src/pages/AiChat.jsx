@@ -437,7 +437,11 @@ export default function AiChat() {
                     setSelectedProvider(null);
                   }}
                 >
-                  <span>{currentModel.logo}</span>
+                  {currentModel.logo.startsWith('http') ? (
+                    <img src={currentModel.logo} alt={currentModel.provider} style={{width: '20px', height: '20px', borderRadius: '4px', objectFit: 'contain'}} />
+                  ) : (
+                    <span>{currentModel.logo}</span>
+                  )}
                   <span>{currentModel.model}</span>
                   <ChevronDown size={14} />
                 </button>
@@ -460,7 +464,10 @@ export default function AiChat() {
                               className="provider-item"
                               onClick={() => setSelectedProvider(provider)}
                             >
-                              <span className="provider-name">{provider}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <img src={AI_MODELS.find(m => m.provider === provider).logo} alt={provider} style={{ width: '20px', height: '20px', borderRadius: '4px', objectFit: 'contain' }} />
+                                <span className="provider-name">{provider}</span>
+                              </div>
                               <ChevronRight size={14} />
                             </button>
                           ))}
@@ -480,7 +487,13 @@ export default function AiChat() {
                                 setSelectedProvider(null);
                               }}
                             >
-                              <span className="model-logo">{model.logo}</span>
+                              <span className="model-logo" style={{ overflow: 'hidden', padding: model.logo.startsWith('http') ? '2px' : '0' }}>
+                                {model.logo.startsWith('http') ? (
+                                  <img src={model.logo} alt={model.provider} style={{width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px'}} />
+                                ) : (
+                                  model.logo
+                                )}
+                              </span>
                               <div className="model-info">
                                 <span className="model-name">{model.model}</span>
                               </div>

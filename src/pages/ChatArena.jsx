@@ -33,7 +33,13 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
               setSelectedProvider(null);
             }}
           >
-            <span className="model-logo">{selectedModel.logo}</span>
+            <span className="model-logo" style={{ overflow: 'hidden', padding: selectedModel.logo.startsWith('http') ? '2px' : '0' }}>
+              {selectedModel.logo.startsWith('http') ? (
+                <img src={selectedModel.logo} alt={selectedModel.provider} style={{width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px'}} />
+              ) : (
+                selectedModel.logo
+              )}
+            </span>
             <div className="model-info">
               <span className="model-provider">{selectedModel.provider}</span>
               <span className="model-name">{selectedModel.model}</span>
@@ -58,7 +64,10 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
                         className="provider-item"
                         onClick={() => setSelectedProvider(provider)}
                       >
-                        <span className="provider-name">{provider}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <img src={AI_MODELS.find(m => m.provider === provider).logo} alt={provider} style={{ width: '20px', height: '20px', borderRadius: '4px', objectFit: 'contain' }} />
+                          <span className="provider-name">{provider}</span>
+                        </div>
                         <ChevronRight size={14} />
                       </button>
                     ))}
@@ -79,7 +88,13 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
                           setSelectedProvider(null);
                         }}
                       >
-                        <span className="model-logo">{model.logo}</span>
+                        <span className="model-logo" style={{ overflow: 'hidden', padding: model.logo.startsWith('http') ? '2px' : '0' }}>
+                          {model.logo.startsWith('http') ? (
+                            <img src={model.logo} alt={model.provider} style={{width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px'}} />
+                          ) : (
+                            model.logo
+                          )}
+                        </span>
                         <div className="model-info">
                           <span className="model-name">{model.model}</span>
                         </div>

@@ -20,6 +20,7 @@ export default function ImageGeneration() {
   const [selectedRatio, setSelectedRatio] = useState('1:1');
   const [quality, setQuality] = useState('standard');
   const [prompt, setPrompt] = useState('');
+  const [model, setModel] = useState('dall-e-3');
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImages, setGeneratedImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null); // For modal
@@ -121,6 +122,7 @@ export default function ImageGeneration() {
           prompt: prompt,
           aspect_ratio: selectedRatio,
           quality: quality,
+          model: model,
         }),
       });
 
@@ -158,6 +160,7 @@ export default function ImageGeneration() {
           id: Date.now(),
           url: imageUrl,
           prompt: prompt,
+          model: model,
           ratio: selectedRatio,
           quality: quality,
           timestamp: new Date().toISOString()
@@ -203,6 +206,23 @@ export default function ImageGeneration() {
         </div>
 
         <div className="control-scroll-area">
+          <div className="control-section">
+            <label>AI Model</label>
+            <select 
+              className="control-select glass"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+            >
+              <optgroup label="OpenAI">
+                <option value="dall-e-3">DALL-E 3</option>
+                <option value="dall-e-2">DALL-E 2</option>
+              </optgroup>
+              <optgroup label="Google">
+                <option value="imagen-3">Imagen 3</option>
+              </optgroup>
+            </select>
+          </div>
+
           <div className="control-section">
             <label>Prompt Description</label>
             <textarea 
@@ -325,7 +345,7 @@ export default function ImageGeneration() {
                     <div className="overlay-content">
                       <div className="image-meta">
                         <span className="meta-prompt">{img.prompt}</span>
-                        <span className="meta-details">{img.ratio} • {img.quality}</span>
+                        <span className="meta-details">{img.model === 'dall-e-3' ? 'DALL-E 3' : img.model === 'dall-e-2' ? 'DALL-E 2' : img.model === 'imagen-3' ? 'Imagen 3' : img.model || 'DALL-E 3'} • {img.ratio} • {img.quality}</span>
                       </div>
                       <div className="action-group">
                         <button 
@@ -384,6 +404,7 @@ export default function ImageGeneration() {
               <div className="modal-footer" style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '16px' }}>
                 <p style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '0.5rem' }}>{selectedImage.prompt}</p>
                 <div style={{ display: 'flex', gap: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+                  <span>Model: {selectedImage.model === 'dall-e-3' ? 'DALL-E 3' : selectedImage.model === 'dall-e-2' ? 'DALL-E 2' : selectedImage.model === 'imagen-3' ? 'Imagen 3' : selectedImage.model || 'DALL-E 3'}</span>
                   <span>Ratio: {selectedImage.ratio}</span>
                   <span>Quality: {selectedImage.quality}</span>
                   <span>Created: {new Date(selectedImage.timestamp).toLocaleString()}</span>
