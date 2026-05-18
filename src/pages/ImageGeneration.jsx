@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Image as ImageIcon, Settings, Download, Expand, Wand2, X, Trash2, AlertCircle, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../config/AuthContext';
 import './MediaGeneration.css';
 
 const ratios = [
@@ -17,6 +18,7 @@ const qualities = [
 ];
 
 export default function ImageGeneration() {
+  const { user } = useAuth();
   const [selectedRatio, setSelectedRatio] = useState('1:1');
   const [quality, setQuality] = useState('standard');
   const [prompt, setPrompt] = useState('');
@@ -123,6 +125,7 @@ export default function ImageGeneration() {
           aspect_ratio: selectedRatio,
           quality: quality,
           model: model,
+          email: user?.email || '',
         }),
       });
 

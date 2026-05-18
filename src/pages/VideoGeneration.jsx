@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Video, Settings, Download, Expand, Wand2, X, Trash2, AlertCircle, Sparkles, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../config/AuthContext';
 import './MediaGeneration.css';
 
 export default function VideoGeneration() {
+  const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [model, setModel] = useState('OpenAI Sora');
   const [cameraMotion, setCameraMotion] = useState('Pan Left to Right');
@@ -119,6 +121,7 @@ export default function VideoGeneration() {
           duration: duration,
           aspect_ratio: aspectRatio,
           model: model,
+          email: user?.email || '',
         }),
       });
 

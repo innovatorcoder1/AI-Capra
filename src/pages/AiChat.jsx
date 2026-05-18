@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import './ChatArena.css';
 
 import { AI_MODELS } from '../config/models';
+import { useAuth } from '../config/AuthContext';
 
 const WEBHOOK_URL = 'https://n8n.srv1196219.hstgr.cloud/webhook/AI-Capra';
 
@@ -65,6 +66,7 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
 }
 
 export default function AiChat() {
+  const { user } = useAuth();
   const [currentModel, setCurrentModel] = useState(AI_MODELS[0]);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
@@ -328,6 +330,7 @@ export default function AiChat() {
       formData.append('model', currentModel.model);
       formData.append('provider', currentModel.provider);
       formData.append('conversation_id', conversationId);
+      formData.append('email', user?.email || '');
 
       if (userMessage.type === 'document' || userMessage.type === 'image') {
         if (currentFiles.length > 0) formData.append('file', currentFiles[0]);

@@ -6,10 +6,12 @@ import remarkGfm from 'remark-gfm';
 import { Brain, Heart, Target, Award, TrendingUp, Smile, X, Mic, Send, PhoneOff, Settings, Sparkles, User, Info, Phone } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../config/AuthContext';
 import './Career.css';
 
 
 function LiveSession({ session, onClose }) {
+  const { user } = useAuth();
   const [inputText, setInputText] = useState('');
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [messages, setMessages] = useState([
@@ -141,6 +143,7 @@ function LiveSession({ session, onClose }) {
       formData.append('type', userMessage.type);
       formData.append('coach_type', session.title);
       formData.append('conversation_id', conversationId);
+      formData.append('email', user?.email || '');
 
       if (userMessage.type === 'audio' && currentAudioBlob) {
         formData.append('file', currentAudioBlob, 'audio.wav');
