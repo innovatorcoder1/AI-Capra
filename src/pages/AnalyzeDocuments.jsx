@@ -19,6 +19,11 @@ export default function AnalyzeDocuments() {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
+      if (selectedFile.size > 20 * 1024 * 1024) {
+        setError("your file is exceeded 20MB");
+        setFile(null);
+        return;
+      }
       setFile(selectedFile);
       setReport(null);
       setError(null);

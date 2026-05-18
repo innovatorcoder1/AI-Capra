@@ -21,6 +21,9 @@
 
 .nav-logo {
   height: 36px;
+  width: 36px;
+  border-radius: 50%;
+  object-fit: cover;
   filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
 }
 

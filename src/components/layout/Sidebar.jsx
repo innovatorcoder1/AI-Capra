@@ -58,7 +58,7 @@ export default function Sidebar({ onClose, isCollapsed, onToggle, onOpenHistory 
               <Menu size={20} />
             </button>
             <div className="logo-container">
-              <img src="/logo.png" alt="AI Capra Logo" style={{ height: '40px', filter: 'drop-shadow(0 0 8px rgba(212,175,55,0.3))' }} />
+              <img src="/logo.png" alt="AI Capra Logo" style={{ height: '40px', width: '40px', borderRadius: '50%', objectFit: 'cover', filter: 'drop-shadow(0 0 8px rgba(212,175,55,0.3))' }} />
               {!isCollapsed && (
                 <div className="logo-text-container">
                   <h1 className="logo-text text-gradient animate-shimmer" style={{ marginTop: '4px' }}>AI CAPRA</h1>

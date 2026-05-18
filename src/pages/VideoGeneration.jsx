@@ -5,7 +5,7 @@ import './MediaGeneration.css';
 
 export default function VideoGeneration() {
   const [prompt, setPrompt] = useState('');
-  const [model, setModel] = useState('sora');
+  const [model, setModel] = useState('OpenAI Sora');
   const [cameraMotion, setCameraMotion] = useState('Pan Left to Right');
   const [duration, setDuration] = useState('4 Seconds');
   const [aspectRatio, setAspectRatio] = useState('16:9');
@@ -36,18 +36,53 @@ export default function VideoGeneration() {
       const target = Array.isArray(data) ? data[0] : data;
       if (!target) return null;
 
+      // Handle the structure described by the user (n8n binary object pattern)
+      // data: "base64...", mimeType: "video/mp4", etc.
+      if (target.data && typeof target.data === 'string' && target.data.length > 100) {
+        const mimeType = target.mimeType || target.mime_type || 'video/mp4';
+        if (target.data.startsWith('data:')) return target.data;
+        return `data:${mimeType};base64,${target.data}`;
+      }
+
       // Existing checks
       if (target.url) return target.url;
       if (target.video_url) return target.video_url;
+      if (target.avatar_vidoe_url) return target.avatar_vidoe_url;
+      if (target.avatar_video_url) return target.avatar_video_url;
       if (target.output?.[0]?.url) return target.output[0].url;
       
-      // Deep search for anything that looks like a URL
+      if (target.base64) {
+        if (target.base64.startsWith('data:')) return target.base64;
+        return `data:video/mp4;base64,${target.base64}`;
+      }
+
+      // If it's a direct URL string
+      if (typeof data === 'string' && data.startsWith('http')) return data;
+
+      // If it's a raw base64 string
+      if (typeof data === 'string' && data.length > 1000) {
+        if (data.startsWith('data:')) return data;
+        return `data:video/mp4;base64,${data}`;
+      }
+      
+      // Deep search for anything that looks like a URL or base64 data
       const findVideo = (obj) => {
         if (!obj || typeof obj !== 'object') return null;
-        const priorityFields = ['url', 'video_url', 'data', 'content'];
+        
+        // Priority fields for URLs or base64 data
+        const priorityFields = ['url', 'video_url', 'avatar_vidoe_url', 'avatar_video_url', 'data', 'base64', 'content'];
         for (const field of priorityFields) {
-          if (obj[field] && typeof obj[field] === 'string' && obj[field].startsWith('http')) {
-            return obj[field];
+          if (obj[field] && typeof obj[field] === 'string') {
+            if (obj[field].startsWith('http') || obj[field].startsWith('data:video')) {
+              return obj[field];
+            }
+            if (field === 'data' && obj[field].length > 1000) {
+              const mimeType = obj.mimeType || obj.mime_type || 'video/mp4';
+              return `data:${mimeType};base64,${obj[field]}`;
+            }
+            if (field === 'base64' && obj[field].length > 1000) {
+              return `data:video/mp4;base64,${obj[field]}`;
+            }
           }
         }
         for (let key in obj) {
@@ -108,8 +143,10 @@ export default function VideoGeneration() {
           const data = JSON.parse(text);
           videoUrl = parseResponse(data);
         } catch (e) {
-          if (text.startsWith('http')) {
-             videoUrl = text;
+          if (text.startsWith('http') || text.startsWith('data:video')) {
+            videoUrl = text;
+          } else if (text.length > 1000) {
+            videoUrl = `data:video/mp4;base64,${text}`;
           }
         }
       }
@@ -174,11 +211,11 @@ export default function VideoGeneration() {
               onChange={(e) => setModel(e.target.value)}
             >
               <optgroup label="OpenAI">
-                <option value="sora">OpenAI Sora</option>
+                <option value="OpenAI Sora">OpenAI Sora</option>
               </optgroup>
               <optgroup label="Google">
-                <option value="veo">Google Veo</option>
-                <option value="gemini-1.5-pro">Gemini 1.5 Pro Video</option>
+                <option value="Google Veo">Google Veo</option>
+                <option value="Gemini 1.5 Pro Video">Gemini 1.5 Pro Video</option>
               </optgroup>
             </select>
           </div>

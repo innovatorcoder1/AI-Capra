@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router';
 import { useAuth } from '../../config/AuthContext';
 import { Coins, Settings, User, Bell, Menu, Shield, Moon, LogOut, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ProfileModal from '../profile/ProfileModal';
 import './Header.css';
 
 export default function Header({ onMenuClick }) {
@@ -12,6 +13,7 @@ export default function Header({ onMenuClick }) {
   const notificationsRef = useRef(null);
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -32,7 +34,7 @@ export default function Header({ onMenuClick }) {
   }, []);
 
   const settingsItems = [
-    { icon: User, label: 'My Profile', desc: 'Manage your personal info' },
+    { icon: User, label: 'My Profile', desc: 'Manage your personal info', onClick: () => { setIsProfileModalOpen(true); setShowSettings(false); } },
     { icon: Shield, label: 'Security', desc: 'Password and protection' },
     { icon: Moon, label: 'Appearance', desc: 'Dark mode and themes' },
     { icon: LogOut, label: 'Sign Out', desc: 'Log out of your account', danger: true, onClick: handleSignOut },
@@ -165,6 +167,11 @@ export default function Header({ onMenuClick }) {
           )}
         </motion.button>
       </div>
+
+      <ProfileModal 
+        isOpen={isProfileModalOpen} 
+        onClose={() => setIsProfileModalOpen(false)} 
+      />
     </header>
   );
 }
