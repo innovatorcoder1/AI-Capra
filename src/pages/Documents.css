@@ -593,13 +593,13 @@
   border-bottom: 1px solid rgba(212, 175, 55, 0.1);
 }
 
-.header-left {
+.expanded-header .header-left {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.header-left h2 {
+.expanded-header .header-left h2 {
   font-size: 1.5rem;
   font-weight: 700;
 }

@@ -11,6 +11,7 @@ import CareerDevelopment from './pages/CareerDevelopment';
 import PsychologicalCounseling from './pages/PsychologicalCounseling';
 import Pricing from './pages/Pricing';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import DigitalLibrary from './pages/DigitalLibrary';
 
 export const router = createBrowserRouter([
   {
@@ -34,7 +35,7 @@ export const router = createBrowserRouter([
       { path: "generate-documents", element: <GenerateDocuments /> },
       { path: "career-development", element: <CareerDevelopment /> },
       { path: "psychological-counseling", element: <PsychologicalCounseling /> },
-      { path: "library", element: <AiChat /> }
+      { path: "library", element: <DigitalLibrary /> }
     ]
   }
 ]);
