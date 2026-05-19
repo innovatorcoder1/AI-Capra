@@ -181,7 +181,7 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="message assistant" style={{ width: '100%', justifyContent: 'center' }}>
-            <div className="message-content glass" style={{ textAlign: 'center', fontWeight: 600, fontSize: '1.1rem', margin: '3rem auto', padding: '1.5rem 2.5rem', maxWidth: '540px', lineHeight: '1.6', borderRadius: '20px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)' }}>
+            <div className="message-content glass gold-text" style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.1rem', margin: '3rem auto', padding: '1.5rem 2.5rem', maxWidth: '540px', lineHeight: '1.6', borderRadius: '20px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)' }}>
               Hello! I'm AI Capra, your intelligent assistant. How can I help you today?
             </div>
           </div>
