@@ -23,6 +23,11 @@ export default function Header({ onMenuClick }) {
   useEffect(() => {
     function handleClickOutside(event) {
       if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+        // Ignore clicks on avatar-btn to avoid immediate dismissal conflicts
+        const avatarBtn = document.querySelector('.avatar-btn');
+        if (avatarBtn && avatarBtn.contains(event.target)) {
+          return;
+        }
         setShowSettings(false);
       }
       if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
@@ -94,7 +99,7 @@ export default function Header({ onMenuClick }) {
           </AnimatePresence>
         </div>
 
-        <div className="settings-container" ref={settingsRef}>
+        <div className="settings-container" ref={settingsRef} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -102,6 +107,20 @@ export default function Header({ onMenuClick }) {
             onClick={() => setShowSettings(!showSettings)}
           >
             <Settings size={20} />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`avatar-btn ${showSettings ? 'active' : ''}`}
+            onClick={() => setShowSettings(!showSettings)}
+            title={user?.email || 'Guest User'}
+          >
+            {user?.user_metadata?.avatar_url ? (
+              <img src={user.user_metadata.avatar_url} alt="Profile" className="avatar-img" />
+            ) : (
+              <User size={20} color="#000" />
+            )}
           </motion.button>
 
           <AnimatePresence>
@@ -152,20 +171,6 @@ export default function Header({ onMenuClick }) {
             )}
           </AnimatePresence>
         </div>
-
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className={`avatar-btn ${showSettings ? 'active' : ''}`}
-          onClick={() => setShowSettings(!showSettings)}
-          title={user?.email || 'Guest User'}
-        >
-          {user?.user_metadata?.avatar_url ? (
-            <img src={user.user_metadata.avatar_url} alt="Profile" className="avatar-img" />
-          ) : (
-            <User size={20} color="#000" />
-          )}
-        </motion.button>
       </div>
 
       <ProfileModal 

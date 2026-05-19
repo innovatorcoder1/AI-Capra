@@ -343,11 +343,11 @@
 
 @media (max-width: 768px) {
   .settings-dropdown {
-    position: fixed;
-    top: auto;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    width: auto;
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    left: auto;
+    width: 280px;
+    bottom: auto;
   }
 }

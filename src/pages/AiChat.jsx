@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Mic, ChevronDown, ChevronLeft, ChevronRight, Trophy, X, Pause, Play, Phone, PhoneOff, Square } from 'lucide-react';
+import { Send, Paperclip, Mic, ChevronDown, ChevronLeft, ChevronRight, Trophy, X, Pause, Play, Phone, PhoneOff, Square, Video, VideoOff, Settings, MicOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -7,6 +7,88 @@ import './ChatArena.css';
 
 import { AI_MODELS } from '../config/models';
 import { useAuth } from '../config/AuthContext';
+import useLiveCall from '../hooks/useLiveCall';
+
+function AudioVisualizer({ analyser, isSpeaking, volume }) {
+  const canvasRef = useRef(null);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animId;
+    
+    const draw = () => {
+      animId = requestAnimationFrame(draw);
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      
+      let dataArray = new Uint8Array(0);
+      if (analyser) {
+        const bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+        analyser.getByteTimeDomainData(dataArray);
+      }
+      
+      ctx.lineWidth = 3;
+      const gradient = ctx.createLinearGradient(0, 0, width, 0);
+      gradient.addColorStop(0, '#a855f7');
+      gradient.addColorStop(0.5, '#00c972');
+      gradient.addColorStop(1, '#3b82f6');
+      ctx.strokeStyle = gradient;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = 'rgba(0, 201, 114, 0.4)';
+      
+      ctx.beginPath();
+      
+      if (analyser && dataArray.length > 0) {
+        const sliceWidth = width / dataArray.length;
+        let x = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = (v * height) / 2;
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+          x += sliceWidth;
+        }
+      } else {
+        ctx.moveTo(0, height / 2);
+        for (let x = 0; x < width; x++) {
+          const freq = isSpeaking ? 0.05 : 0.01;
+          const amp = isSpeaking ? 16 : (volume > 0 ? volume * 0.35 : 2);
+          const y = height / 2 + Math.sin(x * freq + Date.now() * 0.005) * amp;
+          ctx.lineTo(x, y);
+        }
+      }
+      
+      ctx.lineTo(width, height / 2);
+      ctx.stroke();
+    };
+    
+    draw();
+    return () => cancelAnimationFrame(animId);
+  }, [analyser, isSpeaking, volume]);
+  
+  return <canvas ref={canvasRef} width={300} height={80} className="call-visualizer-canvas" />;
+}
+
+function CameraPreview({ stream }) {
+  const videoRef = useRef(null);
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+  return (
+    <div className="local-camera-preview">
+      <video ref={videoRef} autoPlay playsInline muted />
+    </div>
+  );
+}
 
 const WEBHOOK_URL = 'https://n8n.srv1196219.hstgr.cloud/webhook/AI-Capra';
 
@@ -73,7 +155,23 @@ export default function AiChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [isCalling, setIsCalling] = useState(false);
+  const {
+    isCalling,
+    callStatus,
+    isMuted,
+    isCameraOn,
+    errorMessage,
+    audioVolume,
+    isSimulationMode,
+    isAgentSpeaking,
+    cameraStream,
+    analyser,
+    openCallScreen,
+    startCall,
+    endCall,
+    toggleMute,
+    toggleCamera
+  } = useLiveCall('https://n8n.srv1196219.hstgr.cloud/webhook/Live-Call-Agent');
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [conversationId] = useState(() => crypto.randomUUID?.() || Math.random().toString(36).substring(2) + Date.now().toString(36));
 
@@ -511,7 +609,7 @@ export default function AiChat() {
 
               <button
                 className="input-action-btn calling-btn"
-                onClick={() => setIsCalling(true)}
+                onClick={() => openCallScreen()}
                 title="Live Call Agent"
               >
                 <Phone size={20} />
@@ -559,7 +657,7 @@ export default function AiChat() {
 
       <AnimatePresence>
         {isCalling && (
-          <div className="call-agent-overlay" onClick={() => setIsCalling(false)}>
+          <div className="call-agent-overlay" onClick={endCall}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -567,16 +665,85 @@ export default function AiChat() {
               className="call-agent-card glass"
               onClick={e => e.stopPropagation()}
             >
-              <div className="agent-avatar-wrapper">
-                <div className="pulse-ring"></div>
-                <img src="/logo.png" alt="AI Agent" className="agent-avatar" />
+              <div className={`hyper-avatar-container ${isAgentSpeaking ? 'speaking' : ''} ${isSimulationMode ? 'fallback' : ''}`}>
+                <div className="pulse-ring" style={{ transform: `scale(${1 + audioVolume / 100})`, opacity: isAgentSpeaking ? 0.8 : 0.4 }}></div>
+                <div className="pulse-ring" style={{ transform: `scale(${1.2 + audioVolume / 80})`, opacity: isAgentSpeaking ? 0.5 : 0.2, animationDelay: '0.5s' }}></div>
+                
+                <div className="hyper-avatar-frame" style={{ borderColor: isSimulationMode ? '#f59e0b' : 'var(--accent-primary)' }}>
+                  <div className="hyper-avatar-lighting"></div>
+                  <img 
+                    src="/avatar-premium.png" 
+                    alt="Realistic AI Assistant" 
+                    className={`hyper-avatar-img ${isAgentSpeaking ? 'speaking' : ''}`} 
+                    style={{ 
+                      transform: isAgentSpeaking ? `scale(${1 - audioVolume / 1000}, ${1 + audioVolume / 250}) translateY(${audioVolume / 450}px)` : 'scale(1) translateY(0)'
+                    }} 
+                  />
+                </div>
               </div>
-              <div className="call-status">Calling...</div>
+              
+              <div className="call-status">
+                {callStatus === 'idle' && "Ready to Connect"}
+                {callStatus === 'connecting' && "Establishing Secure WebRTC Line..."}
+                {callStatus === 'connected' && (isSimulationMode ? "Live Audio (Secure Fallback)" : "Live Audio Session Connected")}
+                {callStatus === 'error' && "Connection Error"}
+              </div>
+              
               <div className="agent-name">Capra AI Agent</div>
 
+              {/* Dynamic waveform visualizer */}
+              <AudioVisualizer analyser={analyser} isSpeaking={isAgentSpeaking} volume={audioVolume} />
+
+              {/* Error readout */}
+              {errorMessage && <div className="call-error-message">{errorMessage}</div>}
+
+              {/* Floating Camera Preview inside overlay */}
+              {isCameraOn && cameraStream && <CameraPreview stream={cameraStream} />}
+
+              {/* Call Controls Panel */}
               <div className="call-actions">
-                <button className="end-call-btn" onClick={() => setIsCalling(false)}>
-                  <PhoneOff size={24} />
+                <button 
+                  className={`call-action-btn ${isMuted ? 'active' : ''}`} 
+                  onClick={toggleMute}
+                  title={isMuted ? "Unmute Mic" : "Mute Mic"}
+                >
+                  {isMuted ? <MicOff size={22} /> : <Mic size={22} />}
+                </button>
+
+                <button 
+                  className="start-call-btn" 
+                  onClick={() => startCall('Capra AI Agent')} 
+                  title="Start/Reconnect Call"
+                  style={{ 
+                    width: '60px', 
+                    height: '60px', 
+                    borderRadius: '50%', 
+                    background: '#00c972', 
+                    border: 'none', 
+                    color: 'white', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    cursor: 'pointer',
+                    boxShadow: '0 0 20px rgba(0, 201, 114, 0.4)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <Phone size={26} />
+                </button>
+
+                <button className="end-call-btn" onClick={endCall} title="End Call">
+                  <PhoneOff size={28} />
+                </button>
+
+                <button 
+                  className={`call-action-btn ${isCameraOn ? 'camera-on' : ''}`} 
+                  onClick={toggleCamera}
+                  title={isCameraOn ? "Camera Off" : "Camera On"}
+                >
+                  {isCameraOn ? <Video size={22} /> : <VideoOff size={22} />}
                 </button>
               </div>
             </motion.div>
