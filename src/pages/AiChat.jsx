@@ -180,8 +180,8 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
     <div className="chat-panel">
       <div className="chat-messages">
         {messages.length === 0 && (
-          <div className="message assistant">
-            <div className="message-content glass">
+          <div className="message assistant" style={{ width: '100%', justifyContent: 'center' }}>
+            <div className="message-content glass" style={{ textAlign: 'center', fontWeight: 600, fontSize: '1.1rem', margin: '3rem auto', padding: '1.5rem 2.5rem', maxWidth: '540px', lineHeight: '1.6', borderRadius: '20px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)' }}>
               Hello! I'm AI Capra, your intelligent assistant. How can I help you today?
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function AiChat() {
     toggleCamera
   } = useLiveCall('https://n8n.srv1196219.hstgr.cloud/webhook/Live-Call-Agent');
   const [selectedProvider, setSelectedProvider] = useState(null);
-  const [conversationId] = useState(() => crypto.randomUUID?.() || Math.random().toString(36).substring(2) + Date.now().toString(36));
+  const [conversationId, setConversationId] = useState(() => crypto.randomUUID?.() || Math.random().toString(36).substring(2) + Date.now().toString(36));
 
   // Recording states
   const [isRecording, setIsRecording] = useState(false);
@@ -261,6 +261,19 @@ export default function AiChat() {
   const timerRef = useRef(null);
   const fileInputRef = useRef(null);
   const chatInputRef = useRef(null);
+
+  // Reset chat listener for sidebar "New Chat" button
+  useEffect(() => {
+    const handleNewChat = () => {
+      setMessages([]);
+      setInputText('');
+      setSelectedFiles([]);
+      setAudioBlob(null);
+      setConversationId(crypto.randomUUID?.() || Math.random().toString(36).substring(2) + Date.now().toString(36));
+    };
+    window.addEventListener('new-chat', handleNewChat);
+    return () => window.removeEventListener('new-chat', handleNewChat);
+  }, []);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -380,6 +393,14 @@ export default function AiChat() {
         if (cleanContent.includes('","metadata":')) {
             cleanContent = cleanContent.split('","metadata":')[0];
         }
+
+        // Strip trailing n8n execution/sheets/run metadata garbage
+        cleanContent = cleanContent.replace(/(?:\s*"?row in sheet"?|\s*"?runIndex"?|\s*"?itemIndex"?|\s*"?metadata"?|\s*"?success"?)\s*:\s*\d+.*$/gi, '');
+        cleanContent = cleanContent.replace(/\s*row in sheet.*$/gi, '');
+        cleanContent = cleanContent.replace(/","runIndex".*$/gi, '');
+        cleanContent = cleanContent.replace(/,"runIndex".*$/gi, '');
+        cleanContent = cleanContent.replace(/,"itemIndex".*$/gi, '');
+        cleanContent = cleanContent.replace(/}}$/g, '');
 
         setMessages(prev => {
             const newMessages = [...prev];

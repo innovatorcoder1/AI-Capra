@@ -45,6 +45,11 @@ const navCategories = [
 ];
 
 export default function Sidebar({ onClose, isCollapsed, onToggle, onOpenHistory }) {
+  const handleNewChat = () => {
+    const event = new CustomEvent('new-chat');
+    window.dispatchEvent(event);
+  };
+
   return (
     <>
       <aside className={`sidebar glass ${isCollapsed ? 'collapsed' : ''}`}>
@@ -104,7 +109,12 @@ export default function Sidebar({ onClose, isCollapsed, onToggle, onOpenHistory 
         </nav>
 
         <div className="sidebar-footer">
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="btn-new-chat">
+          <motion.button 
+            whileHover={{ scale: 1.02 }} 
+            whileTap={{ scale: 0.98 }} 
+            className="btn-new-chat"
+            onClick={handleNewChat}
+          >
             <Plus size={18} /> {!isCollapsed && 'New Chat'}
           </motion.button>
           <motion.button
