@@ -651,7 +651,7 @@
   overflow: hidden;
 }
 
-.progress-bar-fill {
+.progress-timeline .progress-bar-fill {
   position: absolute;
   top: 0;
   left: 0;

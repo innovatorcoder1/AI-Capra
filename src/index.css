@@ -9,6 +9,12 @@
   --card-bg: rgba(20, 25, 20, 0.4);
   --card-border: rgba(212, 175, 55, 0.2);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Brand Accent Colors */
+  --accent-primary: #00c972;     /* Emerald Green */
+  --accent-secondary: #a855f7;   /* Purple */
+  --accent-blue: #3b82f6;        /* Vivid Royal Blue */
+  --accent-cyan: #06b6d4;        /* Cyan */
 }
 
 body {
