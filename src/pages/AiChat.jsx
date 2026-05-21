@@ -7,6 +7,7 @@ import './ChatArena.css';
 
 import { AI_MODELS } from '../config/models';
 import { useAuth } from '../config/AuthContext';
+import { useLocation } from 'react-router';
 import useLiveCall from '../hooks/useLiveCall';
 
 function AudioVisualizer({ analyser, isSpeaking, volume }) {
@@ -248,6 +249,7 @@ export default function AiChat() {
     toggleCamera
   } = useLiveCall('https://n8n.srv1196219.hstgr.cloud/webhook/Live-Call-Agent');
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const location = useLocation();
   const [conversationId, setConversationId] = useState(() => crypto.randomUUID?.() || Math.random().toString(36).substring(2) + Date.now().toString(36));
 
   // Recording states
@@ -262,6 +264,19 @@ export default function AiChat() {
   const fileInputRef = useRef(null);
   const chatInputRef = useRef(null);
 
+  // Load chat from routing state if passed from navigation
+  useEffect(() => {
+    if (location.state?.conversationId && location.state?.messages) {
+      setConversationId(location.state.conversationId);
+      setMessages(location.state.messages);
+      setInputText('');
+      setSelectedFiles([]);
+      setAudioBlob(null);
+      // Clear location state history so refreshing page doesn't keep reloading it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   // Reset chat listener for sidebar "New Chat" button
   useEffect(() => {
     const handleNewChat = () => {
@@ -273,6 +288,20 @@ export default function AiChat() {
     };
     window.addEventListener('new-chat', handleNewChat);
     return () => window.removeEventListener('new-chat', handleNewChat);
+  }, []);
+
+  // Load chat listener for sidebar history / global history loads
+  useEffect(() => {
+    const handleLoadChat = (e) => {
+      const { conversationId: loadedId, messages: loadedMessages } = e.detail;
+      setConversationId(loadedId);
+      setMessages(loadedMessages);
+      setInputText('');
+      setSelectedFiles([]);
+      setAudioBlob(null);
+    };
+    window.addEventListener('load-chat', handleLoadChat);
+    return () => window.removeEventListener('load-chat', handleLoadChat);
   }, []);
 
   // Auto-resize textarea
@@ -545,6 +574,8 @@ export default function AiChat() {
       const reader = response.body.getReader();
       await parseStreamingResponse(reader);
 
+      // Trigger background update of chat history
+      window.dispatchEvent(new CustomEvent('refresh-history'));
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages(prev => [...prev, {

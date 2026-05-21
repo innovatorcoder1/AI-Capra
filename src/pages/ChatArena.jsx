@@ -466,6 +466,9 @@ export default function ChatArena() {
       sendToModel(modelRight, setMessagesRight, conversationIdRight)
     ]);
 
+    // Trigger background update of chat history
+    window.dispatchEvent(new CustomEvent('refresh-history'));
+
     setIsLoading(false);
   };
 
