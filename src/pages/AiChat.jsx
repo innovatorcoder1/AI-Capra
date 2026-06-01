@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Mic, ChevronDown, ChevronLeft, ChevronRight, Trophy, X, Pause, Play, Phone, PhoneOff, Square, Video, VideoOff, Settings, MicOff } from 'lucide-react';
+import { Send, Paperclip, Mic, ChevronDown, ChevronLeft, ChevronRight, Trophy, X, Pause, Play, Phone, PhoneOff, Square, Video, VideoOff, Settings, MicOff, Copy, Check, Edit2, ThumbsUp, ThumbsDown, Share2, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -168,14 +168,49 @@ function CameraPreview({ stream }) {
 
 const WEBHOOK_URL = 'https://n8n.srv1196219.hstgr.cloud/webhook/AI-Capra';
 
-function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
+function ChatPanel({ side, selectedModel, onSelectModel, messages, onEditMessage, onRegenerate, onFeedback }) {
   const messagesEndRef = useRef(null);
+  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [sharedIndex, setSharedIndex] = useState(null);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editContent, setEditContent] = useState('');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(scrollToBottom, [messages]);
+
+  const handleCopy = (idx, text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(idx);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleShare = (idx, text) => {
+    const shareText = `Check out this response from AI Capra:\n\n${text}`;
+    navigator.clipboard.writeText(shareText);
+    setSharedIndex(idx);
+    setTimeout(() => setSharedIndex(null), 2000);
+  };
+
+  const handleStartEdit = (idx, currentText) => {
+    setEditingIndex(idx);
+    setEditContent(currentText);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setEditContent('');
+  };
+
+  const handleSaveEdit = (idx) => {
+    if (editContent.trim()) {
+      onEditMessage(idx, editContent.trim());
+    }
+    setEditingIndex(null);
+    setEditContent('');
+  };
 
   return (
     <div className="chat-panel">
@@ -188,31 +223,119 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages }) {
           </div>
         )}
         {messages.map((msg, idx) => (
-          <div key={idx} className={`message ${msg.role}`}>
-            <div className={`message-content ${msg.role === 'assistant' ? 'markdown-content glass' : ''}`}>
-              {msg.role === 'assistant' ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {msg.content || "..."}
-                </ReactMarkdown>
-              ) : (
-                msg.content
-              )}
-              {msg.type === 'document' && msg.fileName && (
-                <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
-                  <Paperclip size={12} /> {msg.fileName}
+          <div key={idx} className={`message ${msg.role}`} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', width: '100%' }}>
+            {editingIndex === idx ? (
+              <div className="message-edit-container" style={{ width: '100%', maxWidth: '85%', alignSelf: 'flex-end' }}>
+                <textarea
+                  className="message-edit-textarea"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                />
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                  <button 
+                    className="btn-secondary" 
+                    style={{ padding: '0.35rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-primary)' }}
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="btn-primary" 
+                    style={{ padding: '0.35rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', background: 'linear-gradient(135deg, var(--accent-primary), #00d2ff)', border: 'none', color: 'var(--bg-primary)', fontWeight: 'bold' }}
+                    onClick={() => handleSaveEdit(idx)}
+                  >
+                    Save & Submit
+                  </button>
                 </div>
-              )}
-              {msg.type === 'image' && msg.fileName && (
-                <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
-                  <Paperclip size={12} /> {msg.fileName}
+              </div>
+            ) : (
+              <>
+                <div className={`message-content ${msg.role === 'assistant' ? 'markdown-content glass' : ''}`}>
+                  {msg.role === 'assistant' ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content || "..."}
+                    </ReactMarkdown>
+                  ) : (
+                    msg.content
+                  )}
+                  {msg.type === 'document' && msg.fileName && (
+                    <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
+                      <Paperclip size={12} /> {msg.fileName}
+                    </div>
+                  )}
+                  {msg.type === 'image' && msg.fileName && (
+                    <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
+                      <Paperclip size={12} /> {msg.fileName}
+                    </div>
+                  )}
+                  {msg.type === 'voice' && (
+                    <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
+                      <Mic size={12} /> Voice Message
+                    </div>
+                  )}
                 </div>
-              )}
-              {msg.type === 'voice' && (
-                <div className="message-attachment" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
-                  <Mic size={12} /> Voice Message
+                
+                {/* Actions Toolbar */}
+                <div className="message-actions-bar">
+                  {msg.role === 'user' ? (
+                    <>
+                      <button 
+                        className="msg-action-btn" 
+                        onClick={() => handleStartEdit(idx, msg.content)}
+                        title="Edit query"
+                      >
+                        <Edit2 size={13} />
+                      </button>
+                      <button 
+                        className="msg-action-btn" 
+                        onClick={() => handleCopy(idx, msg.content)}
+                        title="Copy query"
+                      >
+                        {copiedIndex === idx ? <Check size={13} style={{ color: '#00c972' }} /> : <Copy size={13} />}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button 
+                        className={`msg-action-btn ${msg.feedback === 'good' ? 'active-good' : ''}`} 
+                        onClick={() => onFeedback(idx, 'good')}
+                        title="Good response"
+                      >
+                        <ThumbsUp size={13} fill={msg.feedback === 'good' ? '#00c972' : 'none'} />
+                      </button>
+                      <button 
+                        className={`msg-action-btn ${msg.feedback === 'bad' ? 'active-bad' : ''}`} 
+                        onClick={() => onFeedback(idx, 'bad')}
+                        title="Bad response"
+                      >
+                        <ThumbsDown size={13} fill={msg.feedback === 'bad' ? '#ff4d4d' : 'none'} />
+                      </button>
+                      <button 
+                        className="msg-action-btn" 
+                        onClick={() => handleCopy(idx, msg.content)}
+                        title="Copy response"
+                      >
+                        {copiedIndex === idx ? <Check size={13} style={{ color: '#00c972' }} /> : <Copy size={13} />}
+                      </button>
+                      <button 
+                        className="msg-action-btn" 
+                        onClick={() => handleShare(idx, msg.content)}
+                        title="Share response"
+                      >
+                        {sharedIndex === idx ? <Check size={13} style={{ color: '#00c972' }} /> : <Share2 size={13} />}
+                      </button>
+                      <button 
+                        className="msg-action-btn" 
+                        onClick={() => onRegenerate(idx)}
+                        title="Try again"
+                      >
+                        <RotateCcw size={13} />
+                      </button>
+                    </>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         ))}
         {/* Spacer to ensure the last message is not hidden behind the floating bar */}
@@ -525,8 +648,9 @@ export default function AiChat() {
     }
   };
 
-  const handleSend = async () => {
-    if (!inputText.trim() && selectedFiles.length === 0 && !audioBlob) return;
+  const handleSend = async (overrideText = null) => {
+    const textToSend = overrideText !== null ? overrideText : inputText;
+    if (!textToSend.trim() && selectedFiles.length === 0 && !audioBlob) return;
 
     const getMessageType = () => {
         if (audioBlob) return 'voice';
@@ -540,7 +664,7 @@ export default function AiChat() {
     const type = getMessageType();
     const userMessage = {
       role: 'user',
-      content: inputText || (audioBlob ? "Voice Message" : "Uploaded Attachment"),
+      content: textToSend || (audioBlob ? "Voice Message" : "Uploaded Attachment"),
       type: type,
       fileName: selectedFiles.length > 0 ? selectedFiles[0].name : null
     };
@@ -596,6 +720,46 @@ export default function AiChat() {
     }
   };
 
+  const handleEditMessage = async (index, newContent) => {
+    const updatedMessages = messages.slice(0, index);
+    setMessages(updatedMessages);
+    await handleSend(newContent);
+  };
+
+  const handleRegenerate = async (index) => {
+    let precedingUserMsgIndex = -1;
+    for (let i = index - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        precedingUserMsgIndex = i;
+        break;
+      }
+    }
+    
+    if (precedingUserMsgIndex === -1) return;
+    
+    const queryToRegenerate = messages[precedingUserMsgIndex].content;
+    const updatedMessages = messages.slice(0, precedingUserMsgIndex);
+    setMessages(updatedMessages);
+    
+    await handleSend(queryToRegenerate);
+  };
+
+  const handleFeedback = (index, rating) => {
+    setMessages(prev => {
+      const newMsgs = [...prev];
+      if (newMsgs[index]) {
+        if (newMsgs[index].feedback === rating) {
+          const newMsg = { ...newMsgs[index] };
+          delete newMsg.feedback;
+          newMsgs[index] = newMsg;
+        } else {
+          newMsgs[index] = { ...newMsgs[index], feedback: rating };
+        }
+      }
+      return newMsgs;
+    });
+  };
+
   return (
     <div className="chat-arena-container">
       <div className="panels-container">
@@ -604,6 +768,9 @@ export default function AiChat() {
           selectedModel={currentModel}
           onSelectModel={setCurrentModel}
           messages={messages}
+          onEditMessage={handleEditMessage}
+          onRegenerate={handleRegenerate}
+          onFeedback={handleFeedback}
         />
       </div>
 
