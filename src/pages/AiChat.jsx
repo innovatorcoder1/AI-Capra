@@ -386,6 +386,17 @@ export default function AiChat() {
   const timerRef = useRef(null);
   const fileInputRef = useRef(null);
   const chatInputRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const isRecordingRef = useRef(false);
+  const isPausedRef = useRef(false);
+
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
 
   // Load chat from routing state if passed from navigation
   useEffect(() => {
@@ -435,7 +446,7 @@ export default function AiChat() {
     }
   }, [inputText]);
 
-  const startRecording = async () => {
+  const startAudioRecordingFallback = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
@@ -460,14 +471,82 @@ export default function AiChat() {
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
+      setTimeout(() => {
+        chatInputRef.current?.focus();
+      }, 100);
     } catch (err) {
       console.error("Error accessing microphone:", err);
       alert("Please allow microphone access to record audio.");
     }
   };
 
+  const startRecording = async () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = navigator.language || 'en-US';
+
+        const initialText = inputText.trim() ? inputText.trim() + ' ' : '';
+
+        recognition.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
+          }
+
+          setInputText(initialText + finalTranscript + interimTranscript);
+        };
+
+        recognition.onerror = (err) => {
+          console.error("Speech recognition error:", err.error);
+        };
+
+        recognition.onend = () => {
+          if (recognitionRef.current && isRecordingRef.current && !isPausedRef.current) {
+            try {
+              recognition.start();
+            } catch (err) {
+              console.error("Failed to restart speech recognition:", err);
+            }
+          }
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+
+        setIsRecording(true);
+        setIsPaused(false);
+        setRecordingTime(0);
+        timerRef.current = setInterval(() => {
+          setRecordingTime(prev => prev + 1);
+        }, 1000);
+        setTimeout(() => {
+          chatInputRef.current?.focus();
+        }, 100);
+      } catch (err) {
+        console.error("Error starting Speech Recognition:", err);
+        await startAudioRecordingFallback();
+      }
+    } else {
+      await startAudioRecordingFallback();
+    }
+  };
+
   const pauseRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsPaused(true);
+      clearInterval(timerRef.current);
+    } else if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
       clearInterval(timerRef.current);
@@ -475,7 +554,55 @@ export default function AiChat() {
   };
 
   const resumeRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
+    if (recognitionRef.current) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = navigator.language || 'en-US';
+
+      const initialText = inputText.trim() ? inputText.trim() + ' ' : '';
+
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+
+        setInputText(initialText + finalTranscript + interimTranscript);
+      };
+
+      recognition.onerror = (err) => {
+        console.error("Speech recognition error:", err.error);
+      };
+
+      recognition.onend = () => {
+        if (recognitionRef.current && isRecordingRef.current && !isPausedRef.current) {
+          try {
+            recognition.start();
+          } catch (err) {
+            console.error("Failed to restart speech recognition:", err);
+          }
+        }
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+
+      setIsPaused(false);
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+      setTimeout(() => {
+        chatInputRef.current?.focus();
+      }, 100);
+    } else if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
       timerRef.current = setInterval(() => {
@@ -485,12 +612,21 @@ export default function AiChat() {
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current) {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsRecording(false);
+      setIsPaused(false);
+      clearInterval(timerRef.current);
+    } else if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setIsPaused(false);
       clearInterval(timerRef.current);
     }
+    setTimeout(() => {
+      chatInputRef.current?.focus();
+    }, 50);
   };
 
   const formatTime = (seconds) => {
@@ -760,6 +896,17 @@ export default function AiChat() {
     });
   };
 
+  const handleSendClick = async () => {
+    if (isRecordingRef.current) {
+      stopRecording();
+      setTimeout(() => {
+        handleSend();
+      }, 100);
+    } else {
+      handleSend();
+    }
+  };
+
   return (
     <div className="chat-arena-container">
       <div className="panels-container">
@@ -809,7 +956,7 @@ export default function AiChat() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  handleSend();
+                  handleSendClick();
                 }
               }}
             />
@@ -948,7 +1095,7 @@ export default function AiChat() {
 
               <button
                 className="send-btn"
-                onClick={handleSend}
+                onClick={handleSendClick}
                 disabled={isLoading}
               >
                 <Send size={18} />
