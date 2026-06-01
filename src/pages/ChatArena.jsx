@@ -263,7 +263,15 @@ export default function ChatArena() {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    setSelectedFiles(prev => [...prev, ...files]);
+    const pdfFiles = files.filter(file => file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf');
+    
+    if (pdfFiles.length < files.length) {
+      alert("Only PDF files are allowed.");
+    }
+    
+    if (pdfFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...pdfFiles]);
+    }
   };
 
   const removeFile = (index) => {
@@ -535,7 +543,7 @@ export default function ChatArena() {
 
           <div className="chat-input-bottom">
             <div className="input-left-actions">
-              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} multiple />
+              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} accept=".pdf" multiple />
               <button className="input-action-btn" onClick={() => fileInputRef.current.click()} title="Attach file">
                 <Paperclip size={20} />
               </button>

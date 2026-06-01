@@ -378,7 +378,15 @@ export default function AiChat() {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    setSelectedFiles(prev => [...prev, ...files]);
+    const pdfFiles = files.filter(file => file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf');
+    
+    if (pdfFiles.length < files.length) {
+      alert("Only PDF files are allowed.");
+    }
+    
+    if (pdfFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...pdfFiles]);
+    }
   };
 
   const removeFile = (index) => {
@@ -647,6 +655,7 @@ export default function AiChat() {
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
+                accept=".pdf"
                 multiple
               />
               <button
