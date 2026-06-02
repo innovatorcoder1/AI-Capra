@@ -354,6 +354,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  pointer-events: auto; /* Re-enable clicks for file chips and remove buttons */
 }
 
 .file-preview-item {
