@@ -1057,16 +1057,6 @@ export default function AiChat() {
                 </AnimatePresence>
               </div>
 
-              <button
-                className="input-action-btn calling-btn"
-                onClick={() => openCallScreen()}
-                title="Live Call Agent"
-              >
-                <Phone size={20} />
-              </button>
-            </div>
-
-            <div className="input-right-actions">
               {isRecording ? (
                 <div className="recording-controls">
                   <span className="recording-time">{formatTime(recordingTime)}</span>
@@ -1092,6 +1082,16 @@ export default function AiChat() {
                   <Mic size={20} />
                 </button>
               )}
+            </div>
+
+            <div className="input-right-actions">
+              <button
+                className="input-action-btn calling-btn"
+                onClick={() => openCallScreen()}
+                title="Live Call Agent"
+              >
+                <Phone size={20} />
+              </button>
 
               <button
                 className="send-btn"
