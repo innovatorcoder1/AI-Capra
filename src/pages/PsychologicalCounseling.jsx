@@ -195,6 +195,17 @@ function LiveSession({ session, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [conversationId] = useState(() => `conv_${Math.random().toString(36).substr(2, 9)}`);
+  const [selectedVoice, setSelectedVoice] = useState('alloy');
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
+
+  const voices = [
+    { id: 'alloy', name: 'Alloy (Neutral)' },
+    { id: 'echo', name: 'Echo (Male)' },
+    { id: 'fable', name: 'Fable (British)' },
+    { id: 'onyx', name: 'Onyx (Deep Male)' },
+    { id: 'nova', name: 'Nova (Female)' },
+    { id: 'shimmer', name: 'Shimmer (Soft Female)' }
+  ];
 
   const messagesEndRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -209,6 +220,12 @@ function LiveSession({ session, onClose }) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    if (session.isLiveCall) {
+      openCallScreen();
+    }
+  }, [session.isLiveCall]);
 
   const startRecording = async () => {
     try {
@@ -317,6 +334,7 @@ function LiveSession({ session, onClose }) {
       formData.append('coach_type', session.title);
       formData.append('conversation_id', conversationId);
       formData.append('email', user?.email || '');
+      formData.append('voice', selectedVoice);
 
       if (userMessage.type === 'audio' && currentAudioBlob) {
         formData.append('file', currentAudioBlob, 'audio.wav');
@@ -598,12 +616,47 @@ function LiveSession({ session, onClose }) {
               </div>
             )}
           </div>
+          
+          <AnimatePresence>
+            {showAudioSettings && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="audio-model-selector" 
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem', overflow: 'hidden' }}
+              >
+                <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Voice Model:</span>
+                <select 
+                  value={selectedVoice}
+                  onChange={(e) => setSelectedVoice(e.target.value)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#fff',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {voices.map(v => (
+                    <option key={v.id} value={v.id} style={{ background: '#0f172a' }}>{v.name}</option>
+                  ))}
+                </select>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="session-controls">
             <button className="control-btn" onClick={() => setShowGuidelines(true)}><Info size={16} /> Guidelines</button>
             <button className="end-session-btn" onClick={onClose}>
               <PhoneOff size={18} /> End Session
             </button>
-            <button className="control-btn"><Settings size={16} /> Audio</button>
+            <button className="control-btn" onClick={() => setShowAudioSettings(!showAudioSettings)}>
+              <Settings size={16} /> Audio
+            </button>
           </div>
         </div>
       </div>
