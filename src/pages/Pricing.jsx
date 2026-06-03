@@ -96,7 +96,7 @@ export default function Pricing() {
       
       <nav className="simple-nav glass">
         <button className="back-btn" onClick={() => navigate('/')}>
-          <ArrowLeft size={20} /> Back to Home
+          <ArrowLeft size={16} /> Back to Home
         </button>
         <div className="nav-brand">
           <img src="/logo.png" alt="Logo" />
