@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-  Shield, Zap, CircleDot, ChevronRight, Sparkles, 
-  FileText, MessageSquare, Cpu, Globe, Users, 
+import {
+  Shield, Zap, CircleDot, ChevronRight, Sparkles,
+  FileText, MessageSquare, Cpu, Globe, Users,
   ArrowRight, CheckCircle2, Image, Video, Briefcase, Brain, BookOpen
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -81,7 +81,7 @@ export default function LandingPage() {
           <a href="#solutions">Solutions</a>
           <a href="#how-it-works">Process</a>
 
-          <button onClick={() => navigate('/pricing')} style={{ background: 'none', border: 'none', color: '#94a3b8', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'color 0.3s' }}>Pricing</button>
+          <button onClick={() => navigate('/pricing')} style={{ background: 'none', border: 'none', color: '#ffffff', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'color 0.3s' }}>Pricing</button>
           <a href="#roadmap">Future</a>
         </div>
         <button className="btn-primary" onClick={handleLaunch}>
@@ -93,29 +93,29 @@ export default function LandingPage() {
       <section className="hero-section">
         <div className="hero-glow"></div>
         <div className="hero-grid">
-          <motion.div 
+          <motion.div
             className="hero-info"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
             <div className="hero-badge">
-               <Sparkles size={14} color="var(--gold)" />
-               <span>The Next Frontier of Neural Excellence</span>
+              <Sparkles size={14} color="var(--gold)" />
+              <span>The Next Frontier of Neural Excellence</span>
             </div>
             <h1 className="hero-title">
               Unleash the Power of <br />
               <span className="gold-text">Autonomous Intelligence</span>
             </h1>
             <p className="hero-subtitle">
-              AI Capra is an elite ecosystem of generative engines, semantic analyzers, 
+              AI Capra is an elite ecosystem of generative engines, semantic analyzers,
               and cognitive assistants. Built for those who demand absolute precision.
             </p>
-            
+
             <ul className="hero-feature-list">
-               <li><CheckCircle2 size={20} color="var(--gold)" /> Autonomous Neural Reasoning</li>
-               <li><CheckCircle2 size={20} color="var(--gold)" /> Multi-Model Synthesis Engine</li>
-               <li><CheckCircle2 size={20} color="var(--gold)" /> Enterprise Precision Analytics</li>
+              <li><CheckCircle2 size={20} color="var(--gold)" /> Autonomous Neural Reasoning</li>
+              <li><CheckCircle2 size={20} color="var(--gold)" /> Multi-Model Synthesis Engine</li>
+              <li><CheckCircle2 size={20} color="var(--gold)" /> Enterprise Precision Analytics</li>
             </ul>
 
             <div className="hero-buttons">
@@ -126,17 +126,17 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="hero-visual-box"
             initial={{ scale: 0.8, opacity: 0, x: 30 }}
             animate={{ scale: 1, opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 1 }}
           >
             <div className="hero-img-wrapper glass">
-              <img 
-                src="/assets/landing/hero-natural.png" 
-                alt="AI Capra Intelligence" 
-                className="hero-main-img" 
+              <img
+                src="/assets/landing/hero-natural.png"
+                alt="AI Capra Intelligence"
+                className="hero-main-img"
               />
               <div className="img-overlay-text">
                 <div className="overlay-badge">Neural Core v2.4</div>
@@ -157,7 +157,7 @@ export default function LandingPage() {
 
         <div className="features-grid-container">
           {functionalities.map((feature, idx) => (
-            <motion.div 
+            <motion.div
               key={idx}
               className="feature-card glass"
               initial={{ opacity: 0, y: 30 }}
@@ -190,70 +190,70 @@ export default function LandingPage() {
         </div>
 
         <div className="showcase-grid">
-           <motion.div 
-             className="showcase-item glass"
-             initial={{ opacity: 0, x: -50 }}
-             whileInView={{ opacity: 1, x: 0 }}
-             viewport={{ once: true }}
-           >
-              <div className="showcase-info">
-                <h3>Neural Image Forge Pro</h3>
-                <p>Synthesize high-fidelity visual assets with our proprietary diffusion framework. 8K resolution, dynamic lighting, and infinite stylistic depth.</p>
-                <ul className="feature-list-simple">
-                   <li><CheckCircle2 size={16} /> Ultra-HD Cinematic Output</li>
-                   <li><CheckCircle2 size={16} /> Stylistic Consistency Engine</li>
-                   <li><CheckCircle2 size={16} /> Real-time Neural Inference</li>
-                </ul>
-              </div>
-              <div className="showcase-visual-box">
-                <img src="/assets/landing/image-forge.png" alt="Image Forge" />
-              </div>
-           </motion.div>
+          <motion.div
+            className="showcase-item glass"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="showcase-info">
+              <h3>Neural Image Forge Pro</h3>
+              <p>Synthesize high-fidelity visual assets with our proprietary diffusion framework. 8K resolution, dynamic lighting, and infinite stylistic depth.</p>
+              <ul className="feature-list-simple">
+                <li><CheckCircle2 size={16} /> Ultra-HD Cinematic Output</li>
+                <li><CheckCircle2 size={16} /> Stylistic Consistency Engine</li>
+                <li><CheckCircle2 size={16} /> Real-time Neural Inference</li>
+              </ul>
+            </div>
+            <div className="showcase-visual-box">
+              <img src="/assets/landing/image-forge.png" alt="Image Forge" />
+            </div>
+          </motion.div>
 
-           <motion.div 
-             className="showcase-item glass reverse"
-             initial={{ opacity: 0, x: 50 }}
-             whileInView={{ opacity: 1, x: 0 }}
-             viewport={{ once: true }}
-           >
-              <div className="showcase-info">
-                <h3>Semantic Document Intelligence</h3>
-                <p>Transform chaotic datasets into actionable executive summaries. Our RAG-powered analyzer deciphers context, intent, and complex patterns with total precision.</p>
-                <ul className="feature-list-simple">
-                   <li><CheckCircle2 size={16} /> Instant Ontological Summarization</li>
-                   <li><CheckCircle2 size={16} /> Multi-Document Cognitive Mapping</li>
-                   <li><CheckCircle2 size={16} /> Professional PDF Synthesis</li>
-                </ul>
-              </div>
-              <div className="showcase-visual-box">
-                <img src="/assets/landing/doc-intel.png" alt="Doc Analysis" />
-              </div>
-           </motion.div>
+          <motion.div
+            className="showcase-item glass reverse"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="showcase-info">
+              <h3>Semantic Document Intelligence</h3>
+              <p>Transform chaotic datasets into actionable executive summaries. Our RAG-powered analyzer deciphers context, intent, and complex patterns with total precision.</p>
+              <ul className="feature-list-simple">
+                <li><CheckCircle2 size={16} /> Instant Ontological Summarization</li>
+                <li><CheckCircle2 size={16} /> Multi-Document Cognitive Mapping</li>
+                <li><CheckCircle2 size={16} /> Professional PDF Synthesis</li>
+              </ul>
+            </div>
+            <div className="showcase-visual-box">
+              <img src="/assets/landing/doc-intel.png" alt="Doc Analysis" />
+            </div>
+          </motion.div>
         </div>
       </section>
 
       {/* How it Works */}
       <section id="how-it-works" className="how-it-works">
         <div className="section-header">
-           <span className="section-tag">Strategic Workflow</span>
-           <h2 className="section-title">Three Phases of Intelligence</h2>
+          <span className="section-tag">Strategic Workflow</span>
+          <h2 className="section-title">Three Phases of Intelligence</h2>
         </div>
         <div className="steps-container">
-           <div className="step-card glass">
-              <div className="step-num">01</div>
-              <h4>Initialize Matrix</h4>
-              <p>Define your core vision or upload complex datasets for neural ingestion.</p>
-           </div>
-           <div className="step-card glass">
-              <div className="step-num">02</div>
-              <h4>Neural Refinement</h4>
-              <p>Our distributed engines synthesize and optimize every parameter of your request.</p>
-           </div>
-           <div className="step-card glass">
-              <div className="step-num">03</div>
-              <h4>Execute Deployment</h4>
-              <p>Receive professional-grade, actionable results in hyper-accelerated timelines.</p>
-           </div>
+          <div className="step-card glass">
+            <div className="step-num">01</div>
+            <h4>Initialize Matrix</h4>
+            <p>Define your core vision or upload complex datasets for neural ingestion.</p>
+          </div>
+          <div className="step-card glass">
+            <div className="step-num">02</div>
+            <h4>Neural Refinement</h4>
+            <p>Our distributed engines synthesize and optimize every parameter of your request.</p>
+          </div>
+          <div className="step-card glass">
+            <div className="step-num">03</div>
+            <h4>Execute Deployment</h4>
+            <p>Receive professional-grade, actionable results in hyper-accelerated timelines.</p>
+          </div>
         </div>
       </section>
 
@@ -279,13 +279,13 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="roadmap-visual">
-             <div className="roadmap-glow"></div>
-             <motion.div
-               animate={{ rotate: 360 }}
-               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-             >
-                <Cpu size={140} color="var(--gold)" />
-             </motion.div>
+            <div className="roadmap-glow"></div>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            >
+              <Cpu size={140} color="var(--gold)" />
+            </motion.div>
           </div>
         </div>
       </section>
@@ -302,9 +302,15 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="footer">
         <div className="footer-top">
-          <div className="footer-brand">
-            <img src="/logo.png" alt="AI CAPRA" className="nav-logo" />
-            <h3>AI CAPRA</h3>
+          <div className="footer-brand-section">
+            <div className="footer-brand">
+              <img src="/logo.png" alt="AI CAPRA" className="nav-logo" />
+              <span className="brand-name">AI CAPRA</span>
+            </div>
+            <p className="footer-description">
+              The elite ecosystem of autonomous generative engines and semantic analysis.
+              Built for precision and performance.
+            </p>
           </div>
           <div className="footer-links-grid">
             <div className="footer-col">
@@ -323,13 +329,13 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2026 AI CAPRA Technologies. Intelligence Redefined.</p>
+          <p>AI Capra Designed and Developed by Arte Analytics</p>
         </div>
       </footer>
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </div>
   );

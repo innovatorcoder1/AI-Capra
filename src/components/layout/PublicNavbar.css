@@ -24,7 +24,7 @@
   width: 36px;
   border-radius: 50%;
   object-fit: cover;
-  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
+  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6)) drop-shadow(0 0 24px rgba(255, 255, 255, 0.3));
 }
 
 .brand-name {
@@ -48,7 +48,7 @@
 .nav-links button {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: #ffffff;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
