@@ -61,11 +61,7 @@ export default function LandingPage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
 
   const handleLaunch = () => {
-    if (user) {
-      navigate('/chat');
-    } else {
-      setIsAuthModalOpen(true);
-    }
+    navigate('/chat');
   };
 
   return (
