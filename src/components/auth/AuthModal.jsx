@@ -7,11 +7,12 @@ import './AuthModal.css';
 
 export default function AuthModal({ isOpen, onClose }) {
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const { signIn, signUp, signInWithGoogle, loginWithWebhook } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,9 +22,60 @@ export default function AuthModal({ isOpen, onClose }) {
 
     try {
       if (isLogin) {
-        const { error } = await signIn({ email, password });
-        if (error) throw error;
+        const response = await fetch('https://n8n.srv1196219.hstgr.cloud/webhook/Login-User', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        let result = null;
+        try {
+          const text = await response.text();
+          result = JSON.parse(text);
+        } catch (e) {}
+
+        // Extract the message from webhook response (supports array or object format)
+        const webhookMessage =
+          Array.isArray(result) && result.length > 0
+            ? result[0].message
+            : result?.message ?? null;
+
+        // Only allow login if the webhook explicitly confirms success
+        if (webhookMessage === 'Login successful.') {
+          // Store the user in context + localStorage (bypass Supabase)
+          loginWithWebhook({ email, authenticated: true, loginTime: Date.now() });
+        } else {
+          // Show whatever the webhook sent back, or a generic error
+          throw new Error(webhookMessage || 'Login failed. Please check your credentials.');
+        }
       } else {
+        const response = await fetch('https://n8n.srv1196219.hstgr.cloud/webhook/Register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, email, password }),
+        });
+
+        let result = null;
+        try {
+          const text = await response.text();
+          result = JSON.parse(text);
+        } catch (e) {}
+
+        if (result && Array.isArray(result) && result.length > 0 && result[0].message === "user already exists") {
+          setError("User already exists. Please sign in.");
+          setIsLogin(true);
+          setLoading(false);
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error('Registration failed on server');
+        }
+
         const { error } = await signUp({ email, password });
         if (error) throw error;
         alert('Check your email for the confirmation link!');
@@ -86,6 +138,18 @@ export default function AuthModal({ isOpen, onClose }) {
         {error && <div className="auth-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
+          {!isLogin && (
+            <div className="input-group">
+              <Shield className="input-icon" size={18} />
+              <input 
+                type="text" 
+                placeholder="Full Name" 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+          )}
           <div className="input-group">
             <Shield className="input-icon" size={18} />
             <input 

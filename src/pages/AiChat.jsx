@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Mic, ChevronDown, ChevronLeft, ChevronRight, Trophy, X, Pause, Play, Phone, PhoneOff, Square, Video, VideoOff, Settings, MicOff, Copy, Check, Edit2, ThumbsUp, ThumbsDown, Share2, RotateCcw } from 'lucide-react';
+import { Send, Paperclip, Mic, ChevronDown, ChevronLeft, ChevronRight, Trophy, X, Pause, Play, Phone, PhoneOff, Square, Video, VideoOff, Settings, MicOff, Copy, Check, Edit2, ThumbsUp, ThumbsDown, Share2, RotateCcw, Download, Expand } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -168,6 +168,21 @@ function CameraPreview({ stream }) {
 
 const WEBHOOK_URL = 'https://n8n.srv1196219.hstgr.cloud/webhook/AI-Capra';
 
+const downloadImage = async (url, filename) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename || 'ai-capra-image.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (e) {
+    window.open(url, '_blank');
+  }
+};
+
 function ChatPanel({ side, selectedModel, onSelectModel, messages, onEditMessage, onRegenerate, onFeedback }) {
   const messagesEndRef = useRef(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
@@ -250,8 +265,38 @@ function ChatPanel({ side, selectedModel, onSelectModel, messages, onEditMessage
               </div>
             ) : (
               <>
-                <div className={`message-content ${msg.role === 'assistant' ? 'markdown-content glass' : ''}`}>
-                  {msg.role === 'assistant' ? (
+                <div className={`message-content ${msg.role === 'assistant' && msg.type !== 'image_result' ? 'markdown-content glass' : ''}`}>
+                  {msg.role === 'assistant' && msg.type === 'image_result' ? (
+                    <div className="chat-image-result glass" style={{ padding: '0.75rem', borderRadius: '16px', maxWidth: '360px' }}>
+                      <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden' }}>
+                        <img
+                          src={msg.content}
+                          alt="AI processed image"
+                          style={{ width: '100%', display: 'block', borderRadius: '12px', maxHeight: '320px', objectFit: 'cover' }}
+                        />
+                        <div style={{
+                          position: 'absolute', bottom: 0, left: 0, right: 0,
+                          background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
+                          padding: '0.75rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem'
+                        }}>
+                          <button
+                            onClick={() => downloadImage(msg.content, `ai-capra-${Date.now()}.png`)}
+                            title="Download"
+                            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '8px', padding: '6px 8px', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}
+                          >
+                            <Download size={15} />
+                          </button>
+                          <button
+                            onClick={() => window.open(msg.content, '_blank')}
+                            title="Open full size"
+                            style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '8px', padding: '6px 8px', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}
+                          >
+                            <Expand size={15} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : msg.role === 'assistant' ? (
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {msg.content || "..."}
                     </ReactMarkdown>
@@ -637,19 +682,30 @@ export default function AiChat() {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    const pdfFiles = files.filter(file => file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf');
-    
-    if (pdfFiles.length < files.length) {
-      alert("Only PDF files are allowed.");
+    const allowedFiles = files.filter(file =>
+      file.type === 'application/pdf' ||
+      file.name.toLowerCase().endsWith('.pdf') ||
+      file.type.startsWith('image/')
+    );
+
+    if (allowedFiles.length < files.length) {
+      alert('Only PDF and image files are allowed.');
+    }
+
+    if (allowedFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...allowedFiles]);
     }
     
-    if (pdfFiles.length > 0) {
-      setSelectedFiles(prev => [...prev, ...pdfFiles]);
+    if (e.target) {
+      e.target.value = '';
     }
   };
 
   const removeFile = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const findTextInObject = (obj) => {
@@ -813,6 +869,9 @@ export default function AiChat() {
     setSelectedFiles([]);
     setAudioBlob(null);
     setIsLoading(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
 
     try {
       const formData = new FormData();
@@ -839,8 +898,55 @@ export default function AiChat() {
 
       if (!response.ok) throw new Error('Network response was not ok');
 
-      const reader = response.body.getReader();
-      await parseStreamingResponse(reader);
+      if (userMessage.type === 'image') {
+        // Image upload: parse JSON response for avatar_url
+        let imageUrl = null;
+        try {
+          const text = await response.text();
+          let parsedData = null;
+          
+          try {
+            parsedData = JSON.parse(text);
+          } catch (e) {
+            // Try to extract from chunked response if applicable
+            const match = text.match(/beginitem([\s\S]*?)end/);
+            if (match) {
+              try {
+                parsedData = JSON.parse(match[1]);
+              } catch (e2) {}
+            }
+          }
+
+          if (parsedData) {
+            const target = Array.isArray(parsedData) ? parsedData[0] : parsedData;
+            imageUrl =
+              target?.avatar_url ||
+              target?.url ||
+              target?.image_url ||
+              null;
+          }
+
+          // Fallback: regex search for a URL in the raw text
+          if (!imageUrl && text) {
+            const urlMatch = text.match(/https:\/\/[a-zA-Z0-9.\-_/]+\.(png|jpg|jpeg|gif|webp)/i) || 
+                             text.match(/https:\/\/[^\s"'\\]+/);
+            if (urlMatch) {
+              imageUrl = urlMatch[0];
+            }
+          }
+        } catch (e) {
+          console.error('Error extracting image URL:', e);
+        }
+
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: imageUrl || 'Image processed, but no result URL was returned.',
+          type: imageUrl ? 'image_result' : 'text',
+        }]);
+      } else {
+        const reader = response.body.getReader();
+        await parseStreamingResponse(reader);
+      }
 
       // Trigger background update of chat history
       window.dispatchEvent(new CustomEvent('refresh-history'));
@@ -935,7 +1041,15 @@ export default function AiChat() {
             )}
             {selectedFiles.map((file, idx) => (
               <div key={idx} className="file-preview-item">
-                <Paperclip size={14} />
+                {file.type.startsWith('image/') ? (
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={file.name}
+                    style={{ width: '20px', height: '20px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }}
+                  />
+                ) : (
+                  <Paperclip size={14} />
+                )}
                 <span>{file.name}</span>
                 <button className="remove-file-btn" onClick={() => removeFile(idx)}>
                   <X size={14} />
@@ -969,7 +1083,7 @@ export default function AiChat() {
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
-                accept=".pdf"
+                accept=".pdf,application/pdf,image/*"
                 multiple
               />
               <button

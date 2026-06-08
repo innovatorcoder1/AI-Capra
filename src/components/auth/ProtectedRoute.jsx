@@ -21,10 +21,9 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  // if (!user) {
-  //   // Redirect to landing page if not authenticated
-  //   return <Navigate to="/" replace />;
-  // }
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 };

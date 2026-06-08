@@ -11,7 +11,11 @@ export default function PublicNavbar() {
   const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
 
   const handleLaunch = () => {
-    navigate('/chat');
+    if (user) {
+      navigate('/chat');
+    } else {
+      setIsAuthModalOpen(true);
+    }
   };
 
   const handleNavClick = (id) => {
