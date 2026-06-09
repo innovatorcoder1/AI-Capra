@@ -76,9 +76,10 @@ export default function AuthModal({ isOpen, onClose }) {
           throw new Error('Registration failed on server');
         }
 
-        const { error } = await signUp({ email, password });
-        if (error) throw error;
-        alert('Check your email for the confirmation link!');
+        alert('Registration successful! Please sign in with your new credentials.');
+        setIsLogin(true);
+        setLoading(false);
+        return;
       }
       onClose();
       navigate('/chat');

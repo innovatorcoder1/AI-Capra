@@ -1201,7 +1201,10 @@ export default function AiChat() {
             <div className="input-right-actions">
               <button
                 className="input-action-btn calling-btn"
-                onClick={() => openCallScreen()}
+                onClick={() => {
+                  openCallScreen();
+                  startCall('Capra AI Agent');
+                }}
                 title="Live Call Agent"
               >
                 <Phone size={20} />

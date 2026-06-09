@@ -556,7 +556,10 @@ function LiveSession({ session, onClose }) {
                 />
                 <button
                   className="input-action-btn calling-btn"
-                  onClick={() => openCallScreen()}
+                  onClick={() => {
+                    openCallScreen();
+                    startCall(session.botName);
+                  }}
                   title="Live Call Agent"
                 >
                   <Phone size={20} />

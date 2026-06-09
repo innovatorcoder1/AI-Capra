@@ -19,6 +19,7 @@ export default function useLiveCall(webhookUrl = 'https://n8n.srv1196219.hstgr.c
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const remoteAudioRef = useRef(null);
 
   // Speech Fallback references
   const recognitionRef = useRef(null);
@@ -47,6 +48,12 @@ export default function useLiveCall(webhookUrl = 'https://n8n.srv1196219.hstgr.c
     if (cameraStreamRef.current) {
       cameraStreamRef.current.getTracks().forEach(track => track.stop());
       cameraStreamRef.current = null;
+    }
+
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.pause();
+      remoteAudioRef.current.srcObject = null;
+      remoteAudioRef.current = null;
     }
 
     // Close WebRTC
@@ -169,38 +176,42 @@ export default function useLiveCall(webhookUrl = 'https://n8n.srv1196219.hstgr.c
     setIsAgentSpeaking(false);
     setAudioVolume(0);
 
-    let micStream;
-    try {
-      // Request mic permission
-      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      localStreamRef.current = micStream;
-      startAudioAnalysis(micStream);
-    } catch (err) {
-      console.error("Microphone access denied:", err);
-      setErrorMessage("Microphone access denied. Please allow microphone permissions.");
-      setCallStatus('error');
-      return;
-    }
-
-    // Set a safety timeout to fall back to speech synthesis/recognition if WebRTC signaling takes too long or fails
+    // Set a safety timeout in case WebRTC signaling fails
     fallbackTimeoutRef.current = setTimeout(() => {
-      console.warn("WebRTC signaling timed out. Switching to high-fidelity voice simulation...");
-      startSimulationMode(agentName);
-    }, 6000);
+      console.warn("WebRTC signaling timed out.");
+      setCallStatus('error');
+      setErrorMessage("Connection timed out. Please check your backend.");
+    }, 15000);
 
     try {
-      // 1. Initialize Peer Connection
+      // 1. Initialize Peer Connection FIRST
       const pc = new RTCPeerConnection({
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
       });
       peerConnectionRef.current = pc;
 
-      // 2. Add local stream audio track to connection
-      micStream.getTracks().forEach(track => {
-        pc.addTrack(track, micStream);
-      });
+      // OpenAI requires a data channel for Realtime WebRTC
+      const dc = pc.createDataChannel('oai-events');
 
-      // 3. Set up remote stream listener
+      // 2. Request mic permission AFTER creating PC
+      let micStream;
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStreamRef.current = micStream;
+        startAudioAnalysis(micStream);
+      } catch (err) {
+        console.error("Microphone access denied:", err);
+        setErrorMessage("Microphone access denied. Please allow microphone permissions.");
+        setCallStatus('error');
+        return;
+      }
+
+      // 3. Add local stream audio track to connection
+      for (const track of micStream.getTracks()) {
+        pc.addTrack(track, micStream);
+      }
+
+      // 4. Set up remote stream listener
       pc.ontrack = (event) => {
         console.log("Remote track received:", event.streams[0]);
         // Cancel fallback timeout since WebRTC connected successfully
@@ -213,54 +224,62 @@ export default function useLiveCall(webhookUrl = 'https://n8n.srv1196219.hstgr.c
         // Play remote audio
         const remoteStream = event.streams[0];
         const audio = new Audio();
+        remoteAudioRef.current = audio;
         audio.srcObject = remoteStream;
+        audio.autoplay = true;
         audio.play().catch(e => console.warn("Failed to auto-play remote audio:", e));
       };
 
-      // 4. Generate local SDP Offer
-      const offer = await pc.createOffer();
+      // 5. Generate local SDP Offer with explicit audio requirement
+      const offer = await pc.createOffer({ offerToReceiveAudio: true });
       await pc.setLocalDescription(offer);
 
-      // 5. Wait for ICE gathering to complete (Vanilla ICE)
-      await new Promise((resolve) => {
-        if (pc.iceGatheringState === 'complete') {
-          resolve();
-        } else {
-          const checkState = () => {
-            if (pc.iceGatheringState === 'complete') {
-              pc.removeEventListener('icegatheringstatechange', checkState);
-              resolve();
-            }
-          };
-          pc.addEventListener('icegatheringstatechange', checkState);
-          // Safety timeout for ICE gathering
-          setTimeout(resolve, 1500);
-        }
-      });
+      console.log(pc.localDescription.sdp); // must contain m=audio
 
       // 6. POST the SDP offer to the n8n Webhook
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sdp: pc.localDescription?.sdp,
-          type: pc.localDescription?.type,
-          agent: agentName,
-          timestamp: new Date().toISOString()
+          type: pc.localDescription.type,
+          sdp: pc.localDescription.sdp
         })
       });
 
       if (!response.ok) {
-        throw new Error("Webhook returned a non-OK response code.");
+        throw new Error(`Webhook returned error ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const responseText = await response.text();
+      if (!responseText.trim()) {
+        throw new Error("Webhook returned an empty response.");
+      }
 
-      // Check if response contains SDP answer for WebRTC
-      if (data && (data.sdp || (data.body && JSON.parse(data.body).sdp))) {
-        const sdpAnswer = data.sdp || JSON.parse(data.body).sdp;
-        const sdpType = data.type || JSON.parse(data.body).type || 'answer';
+      let sdpAnswer;
+      let sdpType = 'answer';
 
+      try {
+        // Try parsing as JSON first
+        const parsed = JSON.parse(responseText);
+        const dataObj = Array.isArray(parsed) ? parsed[0] : parsed;
+        
+        // Find the SDP in various possible n8n return structures
+        sdpAnswer = dataObj.sdp || dataObj.data || (dataObj.body && (typeof dataObj.body === 'string' && dataObj.body.includes('v=0') ? dataObj.body : JSON.parse(dataObj.body).sdp));
+        sdpType = dataObj.type || 'answer';
+
+        if (typeof sdpAnswer !== 'string' || !sdpAnswer.includes("v=0")) {
+          throw new Error("JSON response did not contain a valid SDP field.");
+        }
+      } catch (e) {
+        // If it's not valid JSON or doesn't have an SDP field, assume the entire raw text is the raw SDP answer
+        if (responseText.startsWith("v=0")) {
+          sdpAnswer = responseText;
+        } else {
+          throw new Error(`Failed to extract SDP from response: ${responseText.substring(0, 100)}...`);
+        }
+      }
+
+      if (sdpAnswer) {
         await pc.setRemoteDescription(new RTCSessionDescription({
           sdp: sdpAnswer,
           type: sdpType
@@ -273,17 +292,17 @@ export default function useLiveCall(webhookUrl = 'https://n8n.srv1196219.hstgr.c
         }
         setCallStatus('connected');
       } else {
-        // Response succeeded but no SDP answer found (common when backend is a mock webhook recording POSTs)
-        throw new Error("No WebRTC SDP offer negotiation returned from n8n backend.");
+        throw new Error("No WebRTC SDP answer returned from backend.");
       }
 
     } catch (err) {
-      console.warn("WebRTC connection failed. Proceeding with voice simulation fallback:", err.message);
+      console.error("WebRTC connection failed:", err.message);
       if (fallbackTimeoutRef.current) {
         clearTimeout(fallbackTimeoutRef.current);
         fallbackTimeoutRef.current = null;
       }
-      startSimulationMode(agentName);
+      setCallStatus('error');
+      setErrorMessage(`Connection failed: ${err.message}`);
     }
   };
 
