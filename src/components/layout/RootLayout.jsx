@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import ParticleField from '../ui/ParticleField';
 import HistoryModal from '../ui/HistoryModal';
+import IndustryModal from '../auth/IndustryModal';
 
 export default function RootLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -30,6 +31,9 @@ export default function RootLayout() {
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
       />
+
+      {/* Industry Selection Modal on First Login */}
+      <IndustryModal />
 
       {sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>
