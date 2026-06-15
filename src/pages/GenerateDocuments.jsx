@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FileEdit, Wand2, CheckCircle2, AlertCircle, Copy, Download, Maximize2, X, ImagePlus } from 'lucide-react';
 import { generatePPT } from '../utils/pptGenerator';
+import { useAuth } from '../config/AuthContext';
 import html2pdf from 'html2pdf.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -8,6 +9,7 @@ import remarkGfm from 'remark-gfm';
 import './Documents.css';
 
 export default function GenerateDocuments() {
+  const { user } = useAuth();
   const [description, setDescription] = useState('');
   const [tone, setTone] = useState('Professional');
   const [format, setFormat] = useState('Email');
@@ -65,6 +67,8 @@ export default function GenerateDocuments() {
       if (selectedImage) {
         formData.append('image', selectedImage);
       }
+      formData.append('email', user?.email || '');
+      formData.append('industry', user?.industry || 'other');
 
       const response = await fetch('https://n8n.srv1196219.hstgr.cloud/webhook/document-generation', {
         method: 'POST',

@@ -448,6 +448,7 @@ export default function ChatArena() {
         formData.append('provider', model.provider);
         formData.append('conversation_id', convId);
         formData.append('email', user?.email || '');
+        formData.append('industry', user?.industry || 'other');
 
         if (userMessage.type === 'document' || userMessage.type === 'image') {
           if (currentFiles.length > 0) formData.append('file', currentFiles[0]);

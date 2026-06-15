@@ -40,7 +40,7 @@ export default function HistoryModal({ isOpen, onClose }) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email: user.email })
+                body: JSON.stringify({ email: user.email, industry: user.industry || 'other' })
             });
 
             if (!response.ok) {

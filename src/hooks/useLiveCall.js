@@ -242,7 +242,8 @@ export default function useLiveCall(webhookUrl = 'https://n8n.srv1196219.hstgr.c
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: pc.localDescription.type,
-          sdp: pc.localDescription.sdp
+          sdp: pc.localDescription.sdp,
+          industry: JSON.parse(localStorage.getItem('ai_capra_user') || '{}')?.industry || 'other'
         })
       });
 
@@ -450,7 +451,8 @@ export default function useLiveCall(webhookUrl = 'https://n8n.srv1196219.hstgr.c
               body: JSON.stringify({
                 input: transcript,
                 type: 'voice_simulation',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                industry: JSON.parse(localStorage.getItem('ai_capra_user') || '{}')?.industry || 'other'
               })
             });
 

@@ -122,6 +122,7 @@ export default function VideoGeneration() {
           aspect_ratio: aspectRatio,
           model: model,
           email: user?.email || '',
+          industry: user?.industry || 'other',
         }),
       });
 

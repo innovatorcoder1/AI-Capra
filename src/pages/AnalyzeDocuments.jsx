@@ -4,9 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import html2pdf from 'html2pdf.js';
+import { useAuth } from '../config/AuthContext';
 import './Documents.css';
 
 export default function AnalyzeDocuments() {
+  const { user } = useAuth();
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [report, setReport] = useState(null);
@@ -88,6 +90,8 @@ export default function AnalyzeDocuments() {
 
     const formData = new FormData();
     formData.append('data', file);
+    formData.append('email', user?.email || '');
+    formData.append('industry', user?.industry || 'other');
 
     // Extract document type for backend flow separation
     const fileType = file.name.split('.').pop().toLowerCase();

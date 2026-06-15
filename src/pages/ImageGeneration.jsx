@@ -126,6 +126,7 @@ export default function ImageGeneration() {
           quality: quality,
           model: model,
           email: user?.email || '',
+          industry: user?.industry || 'other',
         }),
       });
 

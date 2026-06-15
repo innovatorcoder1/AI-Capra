@@ -881,6 +881,7 @@ export default function AiChat() {
       formData.append('provider', currentModel.provider);
       formData.append('conversation_id', conversationId);
       formData.append('email', user?.email || '');
+      formData.append('industry', user?.industry || 'other');
 
       if (userMessage.type === 'document' || userMessage.type === 'image') {
         if (currentFiles.length > 0) formData.append('file', currentFiles[0]);

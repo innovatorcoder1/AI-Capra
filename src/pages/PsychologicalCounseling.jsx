@@ -334,6 +334,7 @@ function LiveSession({ session, onClose }) {
       formData.append('coach_type', session.title);
       formData.append('conversation_id', conversationId);
       formData.append('email', user?.email || '');
+      formData.append('industry', user?.industry || 'other');
       formData.append('voice', selectedVoice);
 
       if (userMessage.type === 'audio' && currentAudioBlob) {
